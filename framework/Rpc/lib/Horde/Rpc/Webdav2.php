@@ -14,6 +14,7 @@ class Horde_Rpc_Webdav2 extends Horde_Rpc
 {
 
     private $_server;
+    private $_enabledCapabilities = array();
 
     public function __construct($request, $params = array())
     {
@@ -23,9 +24,65 @@ class Horde_Rpc_Webdav2 extends Horde_Rpc
         if (strstr($_SERVER['PATH_INFO'])) {
 
         }
-        $this->_server = $this->_getCalDAVServer();
+
+        $registry = $GLOBALS['injector']->getInstance('Horde_Registry');
+        $rootNodes = array();
+        foreach ($registry->listApps() as $app) {
+            $rootNodes[] = new Sabre_DAV_Directory_Horde($app, '');
+        }
+        
+        /* Directory structure */
+        $root = new Sabre_DAV_SimpleDirectory('root', $rootNodes);
+        $objectTree = new Sabre_DAV_ObjectTree($root);
+
+        /* Initializing server */
+        $this->_server = new Sabre_DAV_Server($objectTree);
+
+        // Also make sure there is a 'data' directory, writable by the server. This directory is used to store information about locks
+        $lockBackend = new Sabre_DAV_Locks_Backend_Horde();
+        $lockPlugin = new Sabre_DAV_Locks_Plugin($lockBackend);
+        $server->addPlugin($lockPlugin);
 
         parent::__construct($request, $params);
+
+        // And off we go!
+        $server->exec();
+    }
+
+    /**
+     * Request that the RPC backend enable requested capabilities.
+     *
+     * Valid capabilities:
+     * authentication
+     * caldav
+     *
+     * @example $rpc->requestCapabilities('authentication', 'caldav');
+     *
+     * @return true on success
+     * @throws Horde_Rpc_Exception, Horde_Exception
+     */
+    public function requestCapabilities()
+    {
+        foreach(func_get_args() as $capability) {
+            $capability = strtolower($capability);
+            if (!in_array($capability, $this->_enabledCapabilities)) {
+                switch(strtolower($capability)) {
+                case 'authentication':
+                    $this->getAuthentication();
+                case 'caldav':
+                    $this->_getCalDAVServer();
+                }
+                $this->_enabledCapabilities[] = $capability;
+            }
+        }
+        return true;
+    }
+
+    private function _getAuthentication()
+    {
+
+
+        
     }
 
     private function _getCalDAVServer()
@@ -36,19 +93,17 @@ class Horde_Rpc_Webdav2 extends Horde_Rpc
 
         /* Backends */
         $authBackend = new Sabre_DAV_Auth_Backend_Horde($registry);
+        $principals = new Sabre_DAV_Auth_PrincipalCollection($authBackend);
         $calendarBackend = new Sabre_CalDAV_Backend_Horde($auth);
 
-        /* Directory structure */
-        $root = new Sabre_DAV_SimpleDirectory('root');
-        $principals = new Sabre_DAV_Auth_PrincipalCollection($authBackend);
+
+
         $root->addChild($principals);
         $calendars = new Sabre_CalDAV_CalendarRootNode($authBackend, $calendarBackend);
         $root->addChild($calendars);
 
-        $objectTree = new Sabre_DAV_ObjectTree($root);
 
-        /* Initializing server */
-        Sabre_DAV_Server::__construct($objectTree);
+        
 
         /* Server Plugins */
         $authPlugin = new Sabre_DAV_Auth_Plugin($authBackend, 'Horde DAV Server');

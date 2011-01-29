@@ -7,7 +7,7 @@
  *
  * @package Sabre
  * @author  Ben Klang <bklang@horde.org>
- * @license GPL
+ * @license LGPL
  */
 
 // TODO: This whole class is a noop right now.
@@ -25,7 +25,11 @@ class Sabre_DAV_Locks_Backend_Horde extends Sabre_DAV_Locks_Backend_Abstract {
      */
     public function getLocks($uri)
     {
-        return array();
+        return true;
+        // FIXME: Need a way to pass the app in
+        $locks = $GLOBALS['injector']->getInstance('Horde_Lock')->getLocks($app, $uri);
+
+
     }
 
     /**
