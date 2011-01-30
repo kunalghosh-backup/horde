@@ -28,7 +28,9 @@ class Horde_Rpc_Webdav2 extends Horde_Rpc
         $registry = $GLOBALS['injector']->getInstance('Horde_Registry');
         $rootNodes = array();
         foreach ($registry->listApps() as $app) {
-            $rootNodes[] = new Sabre_DAV_Directory_Horde($app, '');
+            if ($GLOBALS['registry']->hasAppMethod($app, 'browse')) {
+                $rootNodes[] = new Sabre_DAV_Directory_Horde($app, '');
+            }
         }
         
         /* Directory structure */
