@@ -288,8 +288,9 @@ class Horde_Test
         'HTTP_Request' => array(
             'error' => 'Parts of Horde (Jonah, the XML-RPC client/server) use the HTTP_Request library to retrieve URLs and do other HTTP requests.'
         ),
-        'HTTP_WebDAV_Server' => array(
-            'error' => 'The HTTP_WebDAV_Server is required if you want to use the WebDAV interface of Horde, e.g. to access calendars or tasklists with external clients.'
+        'SabreDAV' => array(
+            'path' => 'Sabre/autoload.php',
+            'error' => 'SabreDAV is required if you want to use the WebDAV and CalDAV interfaces of Horde, e.g. to access calendars or tasklists with external clients. See: http://code.google.com/p/sabredav/'
         ),
         'MDB2' => array(
             'error' => 'You will need MDB2 if you are using the SQL driver for Shares.',
