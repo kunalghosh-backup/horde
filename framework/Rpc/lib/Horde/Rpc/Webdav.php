@@ -21,13 +21,8 @@ class Horde_Rpc_Webdav extends Horde_Rpc
         // PHP messages destroy XML output -> switch them off
         ini_set('display_errors', 0);
 
-        if (strstr($_SERVER['PATH_INFO'])) {
-
-        }
-
-        $registry = $GLOBALS['injector']->getInstance('Horde_Registry');
         $rootNodes = array();
-        foreach ($registry->listApps() as $app) {
+        foreach ($GLOBALS['registry']->listApps() as $app) {
             if ($GLOBALS['registry']->hasAppMethod($app, 'browse')) {
                 $rootNodes[] = new Sabre_DAV_Directory_Horde($app, '');
             }
@@ -43,12 +38,26 @@ class Horde_Rpc_Webdav extends Horde_Rpc
         // Also make sure there is a 'data' directory, writable by the server. This directory is used to store information about locks
         $lockBackend = new Sabre_DAV_Locks_Backend_Horde();
         $lockPlugin = new Sabre_DAV_Locks_Plugin($lockBackend);
-        $server->addPlugin($lockPlugin);
+        $this->_server->addPlugin($lockPlugin);
+        
+        $browserPlugin = new Sabre_DAV_Browser_Plugin();
+        $this->_server->addPlugin($browserPlugin);
 
         parent::__construct($request, $params);
 
+    }
+
+    /**
+     * Sends an RPC request to the server and returns the result.
+     *
+     * @param string  The raw request string.
+     *
+     * @return string  The XML encoded response from the server.
+     */
+    function getResponse($request)
+    {
         // And off we go!
-        $server->exec();
+        $this->_server->exec();
     }
 
     /**
