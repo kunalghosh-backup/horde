@@ -19,7 +19,8 @@ class Horde_Rpc_Webdav extends Horde_Rpc
     public function __construct($request, $params = array())
     {
         // PHP messages destroy XML output -> switch them off
-        ini_set('display_errors', 0);
+        // FIXME: On for debugging...
+        //ini_set('display_errors', 0);
 
         $rootNodes = array();
         foreach ($GLOBALS['registry']->listApps() as $app) {
@@ -56,7 +57,6 @@ class Horde_Rpc_Webdav extends Horde_Rpc
      */
     function getResponse($request)
     {
-        // And off we go!
         $this->_server->exec();
     }
 

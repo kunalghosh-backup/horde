@@ -45,4 +45,82 @@ class Sabre_DAV_Directory_Horde implements Sabre_DAV_ICollection
     public function getChild($name) {
         $GLOBALS['registry']->$app->$browse();
     }
+
+
+        /**
+     * Creates a new file in the directory
+     *
+     * data is a readable stream resource
+     *
+     * @param string $name Name of the file
+     * @param resource $data Initial payload
+     * @return void
+     */
+    public function createFile($name, $data = null)
+    {
+        die('FIXME');
+    }
+
+    /**
+     * Creates a new subdirectory
+     *
+     * @param string $name
+     * @return void
+     */
+    public function createDirectory($name)
+    {
+        die('FIXME');
+    }
+
+    /**
+     * Checks if a child-node with the specified name exists
+     *
+     * @return bool
+     */
+    public function childExists($name)
+    {
+        die('FIXME');
+    }
+
+    /**
+     * Deleted the current node
+     *
+     * @return void
+     */
+    public function delete()
+    {
+        die('FIXME');
+    }
+
+    /**
+     * Returns the name of the node
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return implode('/', array($this->_app, $this->_path));
+    }
+
+    /**
+     * Renames the node
+     *
+     * @param string $name The new name
+     * @return void
+     */
+    public function setName($name)
+    {
+        throw new Horde_Exception('Not Implemented');
+    }
+
+    /**
+     * Returns the last modification time, as a unix timestamp
+     *
+     * @return int
+     */
+    public function getLastModified()
+    {
+        # FIXME: There may be a better way to handle this
+        return time();
+    }
 }
