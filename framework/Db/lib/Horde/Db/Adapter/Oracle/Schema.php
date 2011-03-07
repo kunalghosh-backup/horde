@@ -88,4 +88,16 @@ class Horde_Db_Adapter_Oracle_Schema extends Horde_Db_Adapter_Base_Schema
         $this->commitDbTransaction();
     }
 
+    /**
+     * Build appropriate INTERVAL clause.
+     *
+     * @param string $interval
+     * @param string $precision
+     *
+     * @return string
+     */
+    public function interval($interval, $precision)
+    {
+        return 'INTERVAL ' . $interval . '(' . $precision . ')';
+    }
 }
