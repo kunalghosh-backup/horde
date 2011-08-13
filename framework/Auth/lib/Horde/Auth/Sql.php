@@ -276,7 +276,6 @@ class Horde_Auth_Sql extends Horde_Auth_Base
 
         $query .= sprintf(' WHERE %s = ?', $this->_params['username_field']);
         $values[] = $oldID;
-
         try {
             $this->_db->update($query, $values);
         } catch (Horde_Db_Exception $e) {
@@ -329,7 +328,7 @@ class Horde_Auth_Sql extends Horde_Auth_Base
      * Checks if $userId is currently locked.
      *
      * @param string  $userId      The userId to check.
-     * @param boolean $details     Toggle array format with timeout.
+     * @param boolean $show_details     Toggle array format with timeout.
      *
      * @throws Horde_Auth_Exception
      */
@@ -398,15 +397,11 @@ class Horde_Auth_Sql extends Horde_Auth_Base
 
         if (!$this->_params['lock_expiration_field'] == '') {
             if ($time > 0) {
-                $expiration_datetime = new DateTime;
-                /* more elegant but php 5.3+: $now->add(); */
-                $expiration_datetime->modify(sprintf("+%s second", $time));
-                /* more elegant but php 5.3+: $now->getTimestamp(); */
-                $time = $expiration_datetime->format("U");
+                $now = new Horde_Date(time());
+                $time = $now->add($time)->timestamp();
             }
-
             $query .= ', ' . $this->_params['lock_expiration_field'] . ' = ?';
-            $values[] =  $time;
+            $values[] = $time;
         }
         $query .= sprintf(' WHERE %s = ?', $this->_params['username_field']);
         $values[] = $userId;
@@ -563,7 +558,7 @@ class Horde_Auth_Sql extends Horde_Auth_Base
             } catch (Horde_Db_Exception $e) {
                 throw new Horde_Auth_Exception($e);
             }
-            if ($this->params['bad_login_limit'] > 0) {
+            if ($this->_params['bad_login_limit'] > 0) {
                 $query = sprintf('SELECT %s FROM %s WHERE %s = ?',
                     $this->_params['bad_login_count_field'],
                     $this->_params['table'],
@@ -572,7 +567,7 @@ class Horde_Auth_Sql extends Horde_Auth_Base
                 try {
                     $row = $this->_db->selectOne($query, $values);
                     } catch (Horde_Db_Exception $e) {
-                    throw new Horde_Auth_Exception('', Horde_Auth::REASON_FAILED);
+                    throw new Horde_Auth_Exception($e, Horde_Auth::REASON_MESSAGE);
                 }
                 if ($row[$this->_params['bad_login_count_field']] >= $this->_params['bad_login_limit']) {
                     $this->lockUser($userId, $this->_params['lock_duration']);
@@ -623,11 +618,8 @@ class Horde_Auth_Sql extends Horde_Auth_Base
         if (empty($this->_params[$type . '_expiration_window'])) {
             return null;
         } else {
-            $expiration_datetime = new DateTime;
-            /* more elegant but php 5.3+: $now->add(); */
-            $expiration_datetime->modify(sprintf("+%s day", $this->_params[$type.'_expiration_window']));
-            /* more elegant but php 5.3+: $now->getTimestamp(); */
-            return $expiration_datetime->format("U");
+            $now = new Horde_Date(time());
+            return $now->add(array('mday' => $this->_params[$type.'_expiration_window']))->timestamp();
         }
     }
 }

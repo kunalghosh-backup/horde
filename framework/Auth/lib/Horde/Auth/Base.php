@@ -223,11 +223,11 @@ abstract class Horde_Auth_Base
      * Checks if $userId is currently locked.
      *
      * @param string  $userId      The userId to check.
-     * @param boolean $details     Toggle array format with timeout.
+     * @param boolean $show_details     Toggle array format with timeout.
      *
      * @throws Horde_Auth_Exception
      */
-    public function isLocked($userId, $details = false)
+    public function isLocked($userId, $show_details = false)
     {
         throw new Horde_Auth_Exception('Unsupported.');
     }
