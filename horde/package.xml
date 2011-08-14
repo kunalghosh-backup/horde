@@ -40,7 +40,8 @@
  </stability>
  <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
  <notes>
-*
+* [rla] Added lock/unlock user switch to admin/user GUI
+* [rla] Added configuration fields for Horde_Auth_Sql&apos;s lock and bad login counter features
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -4225,7 +4226,8 @@
    <date>2011-08-10</date>
    <license uri="http://www.gnu.org/copyleft/lesser.html">LGPL</license>
    <notes>
-*
+* [rla] Added lock/unlock user switch to admin/user GUI
+* [rla] Added configuration fields for Horde_Auth_Sql&apos;s lock and bad login counter features
    </notes>
   </release>
  </changelog>
