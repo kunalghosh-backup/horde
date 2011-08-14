@@ -35,7 +35,9 @@
  </stability>
  <license uri="http://opensource.org/licenses/lgpl-2.1.php">LGPL</license>
  <notes>
-* 
+* Added a new return code REASON_LOCKED
+* Added bad login counter and temporary autolock feature to driver
+* Added locking feature to driver
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -441,7 +443,9 @@
    <date>2011-07-05</date>
    <license uri="http://opensource.org/licenses/lgpl-2.1.php">LGPL</license>
    <notes>
-* 
+* Added a new return code REASON_LOCKED
+* Added bad login counter and temporary autolock feature to driver
+* Added locking feature to driver
    </notes>
   </release>
  </changelog>
