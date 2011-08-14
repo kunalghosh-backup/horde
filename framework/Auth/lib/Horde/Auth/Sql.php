@@ -121,12 +121,6 @@ class Horde_Auth_Sql extends Horde_Auth_Base
 
         ), $params);
 
-        $params['password_field']        = Horde_String::lower($params['password_field']);
-        $params['username_field']        = Horde_String::lower($params['username_field']);
-        $params['lock_field']            = Horde_String::lower($params['lock_field']);
-        $params['lock_expiration_field'] = Horde_String::lower($params['lock_expiration_field']);
-        $params['bad_login_count_field'] = Horde_String::lower($params['bad_login_count_field']);
-
         /* we can count regardless of lock configuration */
         if (($params['bad_login_count_enable'] === true) && (!empty($params['bad_login_count_field'])) ) {
             $this->_capabilities['badlogincount'] = true;
