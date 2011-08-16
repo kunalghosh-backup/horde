@@ -42,20 +42,22 @@ if ($username = $vars->get('username')) {
     /* Does the alternate email stored in prefs match the one submitted? */
     if ($vars->get('email') == $email) {
         $can_validate = true;
+        $form->setButtons(_("Reset Password"));
         $question = $prefs->getValue('security_question');
-        if($question) {
-            $form->setButtons(_("Reset Password"));
-            $form->addVariable($question, 'question', 'description', false);
-            $form->addVariable(_("Answer"), 'answer', 'text', true);
+        $form->addVariable($question, 'question', 'description', false);
+        $form->addVariable(_("Answer"), 'answer', 'text', true);
+        if (!$question) {
+            $notification->push(_("Cannot reset password automatically because no security question has been set. Please contact your administrator."), 'horde.error');
+            Horde::getServiceLink('login')->add('url', Horde_Util::getFormData('url'))->redirect();
         }
+
     } else {
         $notification->push(_("Incorrect username or alternate address. Try again or contact your administrator if you need further help."), 'horde.error');
     }
 }
 
 /* Validate the form. */
-if (($can_validate && $form->validate($vars)) ||
-    ($can_validate && !$question)) {
+if ($can_validate && $form->validate($vars)) {
     $form->getInfo($vars, $info);
 
     /* Fetch values from prefs for selected user. */
