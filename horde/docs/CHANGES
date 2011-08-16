@@ -2,6 +2,7 @@
 v4.0.9-git
 ----------
 
+[rla] Don't present security question dialog if none is set #10430
 [rla] Added lock/unlock user switch to admin/user GUI
 [rla] Added configuration fields for Horde_Auth_Sql's lock and bad login
       counter features
