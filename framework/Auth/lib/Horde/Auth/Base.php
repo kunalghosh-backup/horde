@@ -223,7 +223,7 @@ abstract class Horde_Auth_Base
      * Locks a user indefinitely or for a specified time
      *
      * @param string $userId      The userId to lock.
-     * @param integer $time       The duration in seconds, 0 = permanent
+     * @param integer $time       The duration in minutes, 0 = permanent
      *
      * @throws Horde_Auth_Exception
      */
@@ -234,6 +234,8 @@ abstract class Horde_Auth_Base
                 if ($time == 0) {
                     /* roughly max timestamp32 */
                     $time = pow(2,32) - time();
+                } else {
+                    $time *= 60;
                 }
                 if ($this->_lock_api->setLock($userId, 'horde_auth', 'login:' . $userId, $time, Horde_Lock::TYPE_EXCLUSIVE)) {
                     return;
@@ -318,9 +320,9 @@ abstract class Horde_Auth_Base
                 $this->_history_api->log($history_identifier,
                     array('action' => 'login_failed', 'who' => $userId));
                 $history_log = $this->_history_api->getHistory($history_identifier);
-                if (($this->_params['bad_login_limit'] > 0) &&
-                    $this->_params['bad_login_limit'] <= $history_log->count()) {
-                    $this->lockUser($userId, $this->_params['lock_duration']);
+                if (($this->_params['login_block_count'] > 0) &&
+                    $this->_params['login_block_count'] <= $history_log->count()) {
+                    $this->lockUser($userId, $this->_params['login_block_time']);
                 }
                 return;
             }

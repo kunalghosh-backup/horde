@@ -190,7 +190,7 @@ class Horde_Core_Factory_Auth extends Horde_Core_Factory_Base
         if ($params['count_bad_logins']) {
             $params['history_api'] = $this->_injector->getInstance('Horde_History');
         }
-        if ($params['lock_enable']) {
+        if ($params['login_block']) {
             $params['lock_api'] = $this->_injector->getInstance('Horde_Lock');
         }
 
