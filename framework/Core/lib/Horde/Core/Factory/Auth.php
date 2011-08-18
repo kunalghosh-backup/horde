@@ -187,7 +187,7 @@ class Horde_Core_Factory_Auth extends Horde_Core_Factory_Base
 
         $params['default_user'] = $GLOBALS['registry']->getAuth();
         $params['logger'] = $this->_injector->getInstance('Horde_Log_Logger');
-        if ($params['bad_login_count_enable']) {
+        if ($params['count_bad_logins']) {
             $params['history_api'] = $this->_injector->getInstance('Horde_History');
         }
         if ($params['lock_enable']) {

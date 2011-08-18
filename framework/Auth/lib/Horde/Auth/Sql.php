@@ -69,7 +69,7 @@ class Horde_Auth_Sql extends Horde_Auth_Base
      *                           number of failed logins since the last
      *                           successful login of the user
      *                           DEFAULT: none
-     * 'bad_login_count_enable' - (boolean) Whether or not we count bad logins
+     * 'count_bad_logins' - (boolean) Whether or not we count bad logins
      *                           This might affect lookup performance on 
      *                           very large horde installations
      *                           DEFAULT: false
