@@ -89,6 +89,14 @@ abstract class Horde_Auth_Base
      * <pre>
      * 'default_user' - (string) The default user.
      * 'logger' - (Horde_Log_Logger) A logger object.
+     * 'lock_api' - (Horde_Lock) A locking object.
+     * 'history_api' - (Horde_History) A history object.
+     * 'login_block_count' - (integer) How many failed logins trigger autoblocking?.
+     *                      0 disables the feature
+     *                      Requires history_api and lock_api
+     * 'login_block_time' - (integer) How many minutes should autoblocking last?.
+     *                      0 means no expiration
+     *                      Requires history_api and lock_api
      * </pre>
      */
     public function __construct(array $params = array())
