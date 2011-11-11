@@ -310,6 +310,7 @@
       </dir> <!-- /js/map/theme/default -->
      </dir> <!-- /js/map/theme -->
      <file name="bing.js" role="horde" />
+     <file name="bootstrap-dropdown.js" role="horde" />
      <file name="cloudmade.js" role="horde" />
      <file name="google.js" role="horde" />
      <file name="horde.js" role="horde" />

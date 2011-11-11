@@ -47,6 +47,7 @@
       <file name="Jquerymobile.php" role="php" />
       <file name="Select.php" role="php" />
       <file name="Simplehtml.php" role="php" />
+      <file name="Semantichtml.php" role="php" />
      </dir> <!-- //lib/Horde/Tree -->
      <file name="Tree.php" role="php" />
     </dir> <!-- //lib/Horde -->
@@ -98,6 +99,7 @@
    <install as="Horde/Tree/Jquerymobile.php" name="lib/Horde/Tree/Jquerymobile.php" />
    <install as="Horde/Tree/Select.php" name="lib/Horde/Tree/Select.php" />
    <install as="Horde/Tree/Simplehtml.php" name="lib/Horde/Tree/Simplehtml.php" />
+   <install as="Horde/Tree/Semantichtml.php" name="lib/Horde/Tree/Semantichtml.php" />
   </filelist>
  </phprelease>
  <changelog>

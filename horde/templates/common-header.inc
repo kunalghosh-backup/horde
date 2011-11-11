@@ -22,6 +22,11 @@ if (!empty($title)) {
     $page_title .= ' :: ' . $title;
 }
 
+Horde::addScriptFile('jquery.mobile/jquery.min.js', 'horde');
+Horde::addScriptFile('bootstrap-dropdown.js', 'horde');
+$css = $GLOBALS['injector']->getInstance('Horde_Themes_Css');
+$css->addThemeStylesheet('bootstrap.min.css');
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "DTD/xhtml1-transitional.dtd">
 <html<?php echo $html_attr ?>>

@@ -21,16 +21,16 @@ function _renderSidebar()
 {
     global $conf, $injector, $language, $prefs, $registry;
 
-    if (!Horde_Util::getFormData('ajaxui') &&
+    /*    if (!Horde_Util::getFormData('ajaxui') &&
         ($conf['menu']['always'] ||
-         ($registry->getAuth() && $prefs->getValue('show_sidebar')))) {
+        ($registry->getAuth() && $prefs->getValue('show_sidebar')))) {*/
         $sidebar = $injector->getInstance('Horde_Core_Sidebar');
-        $is_js = $sidebar->isJavascript();
+        $is_js = false; //$sidebar->isJavascript();
         $tree = $is_js
             ? $sidebar->getBaseTree()
             : $sidebar->getTree();
 
-        Horde::addScriptFile('sidebar.js', 'horde');
+        //Horde::addScriptFile('sidebar.js', 'horde');
 
         $ajax_url = Horde::getServiceLink('ajax', 'horde');
         $ajax_url->pathInfo = 'sidebarUpdate';
@@ -49,8 +49,10 @@ function _renderSidebar()
             ));
         }
 
-        require $registry->get('templates', 'horde') . '/sidebar/sidebar.inc';
+        //require $registry->get('templates', 'horde') . '/sidebar/sidebar.inc';
+        $tree->renderTree();
 
+        if (0) {
         if ($show_sidebar) {
             $style = $rtl
                 ? 'margin-right:' . $width . 'px'
@@ -62,11 +64,12 @@ function _renderSidebar()
                 ? 'margin-right:18px'
                 : 'margin-left:18px';
         }
+        }
 
-        echo '<div id="horde_body" class="body" style="' . $style . '">';
-    } else {
+        //echo '<div id="horde_body" class="body" style="' . $style . '">';
+        /*} else {
         echo '<div class="body" id="horde_body">';
-    }
+        }*/
 
     $GLOBALS['sidebarLoaded'] = true;
 }

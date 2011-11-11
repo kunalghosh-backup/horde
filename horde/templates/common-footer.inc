@@ -1,4 +1,5 @@
 <?php if (Horde_Util::nonInputVar('sidebarLoaded')): ?>
+ </div>
 </div>
 <?php endif; ?>
 <?php if (!$GLOBALS['browser']->isMobile()): ?>

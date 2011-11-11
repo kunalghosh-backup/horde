@@ -134,20 +134,6 @@ class Mnemo_Application extends Horde_Registry_Application
             )
         );
 
-        foreach (Mnemo::listNotepads() as $name => $notepad) {
-            $tree->addNode(
-                $parent . $name . '__new',
-                $parent . '__new',
-                sprintf(_("in %s"), $notepad->get('name')),
-                2,
-                false,
-                array(
-                    'icon' => Horde_Themes::img('add.png'),
-                    'url' => $add->copy()->add('memolist', $name)
-                )
-            );
-        }
-
         $tree->addNode(
             $parent . '__search',
             $parent,
@@ -202,5 +188,4 @@ class Mnemo_Application extends Horde_Registry_Application
             throw new Mnemo_Exception(sprintf(_("There was an error removing notes for %s. Details have been logged."), $user));
         }
     }
-
 }

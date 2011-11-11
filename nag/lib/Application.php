@@ -459,5 +459,4 @@ class Nag_Application extends Horde_Registry_Application
             break;
         }
     }
-
 }

@@ -113,6 +113,29 @@ $this->applications = array(
         'status' => 'sidebar',
     ),
 
+    'kronolith' => array(
+        'name' => _("Calendar"),
+        'provides' => 'calendar',
+    ),
+
+    'kronolith-alarms' => array(
+        'status' => 'sidebar',
+        'app' => 'kronolith',
+        'sidebar_params' => array(
+            'id' => 'alarms'
+        ),
+        'menu_parent' => 'kronolith',
+    ),
+
+    'kronolith-menu' => array(
+        'status' => 'sidebar',
+        'app' => 'kronolith',
+        'sidebar_params' => array(
+            'id' => 'menu'
+        ),
+        'menu_parent' => 'kronolith',
+    ),
+
     'organizing' => array(
         'name' => _("Organizing"),
         'status' => 'heading',
@@ -138,30 +161,6 @@ $this->applications = array(
         'app' => 'turba',
         'menu_parent' => 'turba',
         'status' => 'sidebar',
-    ),
-
-    'kronolith' => array(
-        'name' => _("Calendar"),
-        'provides' => 'calendar',
-        'menu_parent' => 'organizing'
-    ),
-
-    'kronolith-alarms' => array(
-        'status' => 'sidebar',
-        'app' => 'kronolith',
-        'sidebar_params' => array(
-            'id' => 'alarms'
-        ),
-        'menu_parent' => 'kronolith',
-    ),
-
-    'kronolith-menu' => array(
-        'status' => 'sidebar',
-        'app' => 'kronolith',
-        'sidebar_params' => array(
-            'id' => 'menu'
-        ),
-        'menu_parent' => 'kronolith',
     ),
 
     'nag' => array(
@@ -212,14 +211,14 @@ $this->applications = array(
         'menu_parent' => 'trean',
     ),
 
-    'devel' => array(
-        'name' => _("Development"),
+    'more' => array(
+        'name' => _("More"),
         'status' => 'heading',
     ),
 
     'chora' => array(
         'name' => _("Version Control"),
-        'menu_parent' => 'devel'
+        'menu_parent' => 'more'
     ),
 
     'chora-menu' => array(
@@ -231,7 +230,7 @@ $this->applications = array(
     'whups' => array(
         'name' => _("Tickets"),
         'provides' => 'tickets',
-        'menu_parent' => 'devel',
+        'menu_parent' => 'more',
     ),
 
     'whups-menu' => array(
@@ -242,23 +241,18 @@ $this->applications = array(
 
     'luxor' => array(
         'name' => _("X-Ref"),
-        'menu_parent' => 'devel'
-    ),
-
-    'info' => array(
-        'name' => _("Information"),
-        'status' => 'heading',
+        'menu_parent' => 'more'
     ),
 
     'klutz' => array(
         'name' => _("Comics"),
-        'menu_parent' => 'info'
+        'menu_parent' => 'more'
     ),
 
     'jonah' => array(
         'name' => _("News"),
         'provides' => 'news',
-        'menu_parent' => 'info'
+        'menu_parent' => 'more'
     ),
 
     'jonah-menu' => array(
@@ -267,14 +261,9 @@ $this->applications = array(
         'menu_parent' => 'jonah',
     ),
 
-    'office' => array(
-        'name' => _("Office"),
-        'status' => 'heading',
-    ),
-
     'hermes' => array(
         'name' => _("Time Tracking"),
-        'menu_parent' => 'office',
+        'menu_parent' => 'more',
         'provides' => 'time'
     ),
 
@@ -318,32 +307,27 @@ $this->applications = array(
         'menu_parent' => 'myaccount'
     ),
 
-    'website' => array(
-        'name' => _("Web Site"),
-        'status' => 'heading',
-    ),
-
     'agora' => array(
         'name' => _("Forums"),
         'provides' => 'forums',
-        'menu_parent' => 'website'
+        'menu_parent' => 'more'
     ),
 
     'ulaform' => array(
         'name' => _("Forms"),
-        'menu_parent' => 'website'
+        'menu_parent' => 'more'
     ),
 
     'ansel' => array(
         'name' => _("Photos"),
         'provides' => 'images',
-        'menu_parent' => 'website'
+        'menu_parent' => 'more'
     ),
 
     'wicked' => array(
         'name' => _("Wiki"),
         'provides' => 'wiki',
-        'menu_parent' => 'website'
+        'menu_parent' => 'more'
     ),
 
     'vilma' => array(

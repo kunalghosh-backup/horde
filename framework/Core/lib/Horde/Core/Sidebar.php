@@ -29,7 +29,7 @@ class Horde_Core_Sidebar
         // Set up the tree.
         $this->_tree = $GLOBALS['injector']
             ->getInstance('Horde_Core_Factory_Tree')
-            ->create('horde_menu', 'Javascript',
+            ->create('horde_menu', 'Semantichtml',
                      array('jsvar' => 'HordeSidebar.tree'));
     }
 
