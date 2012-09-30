@@ -6,13 +6,13 @@
  * did not receive this file, see http://www.horde.org/licenses/gpl.
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('nag');
 
 /* We can either have a UID or a taskId and a tasklist. Check for
  * UID first. */
 if ($uid = Horde_Util::getFormData('uid')) {
-    $storage = Nag_Driver::singleton();
+    $storage = $GLOBALS['injector']->getInstance('Nag_Factory_Driver')->create();
     try {
         $task = $storage->getByUID($uid);
     } catch (Nag_Exception $e) {
@@ -88,13 +88,12 @@ if (!empty($task->uid)) {
     } catch (Exception $e) {}
 }
 
-$title = $task->name;
 $links = array();
-Horde::addScriptFile('stripe.js', 'horde');
+$page_output->addScriptFile('stripe.js', 'horde');
 
-$taskurl = Horde_Util::addParameter('task.php',
-                              array('task' => $task_id,
-                                    'tasklist' => $tasklist_id));
+$taskurl = Horde::url('task.php')
+    ->add(array('task' => $task_id,
+                'tasklist' => $tasklist_id));
 try {
     $share = $GLOBALS['nag_shares']->getShare($tasklist_id);
 } catch (Horde_Share_Exception $e) {
@@ -103,19 +102,15 @@ try {
 }
 if ($share->hasPermission($GLOBALS['registry']->getAuth(), Horde_Perms::EDIT)) {
     if (!$task->completed) {
-        $links[] = Horde::widget(Horde::url(Horde_Util::addParameter($taskurl, 'actionID', 'complete_task')), _("Complete"), 'smallheader', '', '', _("_Complete"));
+        $links[] = Horde::widget(array('url' => $task->complete_link, 'class' => 'smallheader', 'title' => _("_Complete")));
     }
     if (!$task->private || $task->owner == $GLOBALS['registry']->getAuth()) {
-        $links[] = Horde::widget(Horde::url(Horde_Util::addParameter($taskurl, 'actionID', 'modify_task')), _("Edit"), 'smallheader', '', '', _("_Edit"));
+        $links[] = Horde::widget(array('url' => $taskurl->add('actionID', 'modify_task'), 'class' => 'smallheader', 'title' => _("_Edit")));
     }
 }
 if ($share->hasPermission($GLOBALS['registry']->getAuth(), Horde_Perms::DELETE)) {
-    $links[] = Horde::widget(Horde::url(Horde_Util::addParameter($taskurl, 'actionID', 'delete_task')), _("Delete"), 'smallheader', '', $prefs->getValue('delete_opt') ? 'return window.confirm(\'' . addslashes(_("Really delete this task?")) . '\');' : '', _("_Delete"));
+    $links[] = Horde::widget(array('url' => $taskurl->add('actionID', 'delete_task'), 'class' => 'smallheader', 'onclick' => $prefs->getValue('delete_opt') ? 'return window.confirm(\'' . addslashes(_("Really delete this task?")) . '\');' : '', 'title' => _("_Delete")));
 }
-
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo Nag::menu();
-Nag::status();
 
 /* Set up alarm units and value. */
 $task_alarm = $task->alarm;
@@ -123,5 +118,10 @@ if (!$task->due) {
     $task_alarm = 0;
 }
 $alarm_text = Nag::formatAlarm($task_alarm);
+
+$page_output->header(array(
+    'title' => $task->name
+));
+Nag::status();
 require NAG_TEMPLATES . '/view/task.inc';
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

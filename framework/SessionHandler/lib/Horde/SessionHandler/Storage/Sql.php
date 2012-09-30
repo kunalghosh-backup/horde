@@ -88,7 +88,9 @@ class Horde_SessionHandler_Storage_Sql extends Horde_SessionHandler_Storage
     {
         /* Begin a transaction. */
         // TODO: Rowlocking in Mysql
-        $this->_db->beginDbTransaction();
+        if (!$this->_db->transactionStarted()) {
+            $this->_db->beginDbTransaction();
+        }
 
         /* Build query. */
         $query = sprintf('SELECT session_data FROM %s WHERE session_id = ?',
@@ -97,9 +99,11 @@ class Horde_SessionHandler_Storage_Sql extends Horde_SessionHandler_Storage
 
         /* Execute the query. */
         try {
-            return $this->_db->selectValue($query, $values);
+            $columns = $this->_db->columns($this->_params['table']);
+            return $columns['session_data']->binaryToString(
+                $this->_db->selectValue($query, $values));
         } catch (Horde_Db_Exception $e) {
-            return false;
+            return '';
         }
     }
 
@@ -109,6 +113,7 @@ class Horde_SessionHandler_Storage_Sql extends Horde_SessionHandler_Storage
     {
         if (!$this->_db->isActive()) {
             $this->_db->reconnect();
+            $this->_db->beginDbTransaction();
         }
 
         /* Check if session exists. */
@@ -122,6 +127,7 @@ class Horde_SessionHandler_Storage_Sql extends Horde_SessionHandler_Storage
         }
 
         /* Update or insert session data. */
+        $session_data = new Horde_Db_Value_Binary($session_data);
         try {
             if ($exists) {
                 $query = sprintf(

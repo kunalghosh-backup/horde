@@ -137,6 +137,7 @@ if ($this->event->initialized && $this->event->alarm > 0):
 </tr>
 <?php endif; endif; endif; ?>
 
+<?php if (!$private): ?>
 <!-- tags  -->
 <?php if (!empty($tags)):?>
     <tr>
@@ -147,7 +148,7 @@ if ($this->event->initialized && $this->event->alarm > 0):
     </tr>
 <?php endif;?>
 
-<?php if (!$private && !empty($description)): ?>
+<?php if (!empty($description)): ?>
 <!-- description -->
 <tr>
  <td colspan="2" class="control"><strong><?php echo _("Description") ?></strong></td>
@@ -156,9 +157,11 @@ if ($this->event->initialized && $this->event->alarm > 0):
  <td colspan="2" class="description"><?php echo $GLOBALS['injector']->getInstance('Horde_Core_Factory_TextFilter')->filter($description, 'text2html', array('parselevel' => Horde_Text_Filter_Text2html::MICRO, 'class' => 'text')) ?></td>
 </tr>
 <?php endif; ?>
+<?php endif; ?>
 
 </table>
 
+<?php if (!$private): ?>
 <table cellspacing="0">
 <?php if (!empty($attendees)): ?>
  <!-- attendees -->
@@ -170,7 +173,7 @@ if ($this->event->initialized && $this->event->alarm > 0):
   <th width="25%"><?php echo _("Attendance") ?></th>
   <th width="25%"><?php echo _("Response") ?></th>
  </tr>
- <?php $link_emails = $GLOBALS['registry']->hasMethod('mail/compose'); foreach ($attendees as $email => $status): $full = empty($status['name']) ? $email : Horde_Mime_Address::trimAddress($status['name'] . (strpos($email, '@') === false ? '' : ' <' . $email . '>')) ?>
+ <?php $link_emails = $GLOBALS['registry']->hasMethod('mail/compose'); foreach (array_map('strval', Kronolith::getAttendeeEmailList($attendees)) as $full): ?>
  <tr>
   <td class="nowrap"><?php echo ($link_emails && strpos($email, '@') !== false) ? ($GLOBALS['registry']->call('mail/compose', array(array('to' => $full)))->link(array('title' => sprintf(_("Send an email to %s"), empty($status['name']) ? $email : $status['name']))) . htmlspecialchars($full) . '</a>') : htmlspecialchars($full) ?></td>
   <td><?php echo Kronolith::partToString($status['attendance']) ?></td>
@@ -197,3 +200,4 @@ if ($this->event->initialized && $this->event->alarm > 0):
 <?php endforeach;?>
 <?php endif; ?>
 </table>
+<?php endif; ?>

@@ -1,4 +1,4 @@
-<form method="post" name="export" action="<?php echo Horde::downloadUrl(_("tasks.csv"), null, 'data.php') ?>">
+<form method="post" name="export" action="<?php echo $GLOBALS['registry']->downloadUrl(_("tasks.csv")) ?>">
 <?php Horde_Util::pformInput() ?>
 <input type="hidden" name="actionID" value="export" />
 
@@ -6,7 +6,7 @@
  <?php echo _("Export Tasks") ?>
 </h1>
 
-<div class="headerbox">
+<div class="horde-content">
  <p>
   <?php echo Horde::label('exportID', _("Select the export format:")) ?><br />
   <select id="exportID" name="exportID">
@@ -37,8 +37,10 @@
    <option value="2"><?php echo _("Completed tasks") ?></option>
   </select>
  </p>
+</div>
 
- <input type="submit" value="<?php echo _("Export") ?>" class="button" />
+<div class="horde-form-buttons">
+ <input type="submit" value="<?php echo _("Export") ?>" class="horde-default" />
 </div>
 
 </form>

@@ -10,7 +10,7 @@
  * @author Mike Cochrane <mike@graftonhall.co.nz>
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('whups');
 
 // Instantiate the blocks objects.
@@ -20,14 +20,18 @@ $layout = $blocks->getLayoutManager();
 // Handle requested actions.
 $layout->handle(Horde_Util::getFormData('action'),
                 (int)Horde_Util::getFormData('row'),
-                (int)Horde_Util::getFormData('col'),
-                Horde_Util::getFormData('url'));
+                (int)Horde_Util::getFormData('col'));
 if ($layout->updated()) {
     $prefs->setValue('mybugs_layout', $layout->serialize());
+    if (Horde_Util::getFormData('url')) {
+        $url = new Horde_Url(Horde_Util::getFormData('url'));
+        $url->unique()->redirect();
+    }
 }
 
-$title = sprintf(_("My %s :: Add Content"), $registry->get('name'));
-require $registry->get('templates', 'horde') . '/common-header.inc';
+$page_output->header(array(
+    'title' => sprintf(_("My %s :: Add Content"), $registry->get('name'))
+));
 require WHUPS_TEMPLATES . '/menu.inc';
 require $registry->get('templates', 'horde') . '/portal/edit.inc';
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

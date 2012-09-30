@@ -1,5 +1,5 @@
 <?php
-$bookmark_url = Horde_Util::addParameter(Horde::url('redirect.php'), 'b', $bookmark->id);
+$bookmark_url = Horde::url('redirect.php')->add('b', $bookmark->id);
 $target = $GLOBALS['prefs']->getValue('show_in_new_window') ? '_blank' : '';
 if ($bookmark->http_status == 'error') {
     $status = 'error.png';
@@ -16,8 +16,6 @@ if ($bookmark->http_status == 'error') {
   </td>
 
   <td width="100%" valign="top">
-   <div class="rating"><?php echo static_star_rating_helper($bookmark) ?></div>
-
    <div>
     <?php echo Horde::link($bookmark_url, '', '', $target) . htmlspecialchars($bookmark->title) ?></a>
    </div>

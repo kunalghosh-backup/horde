@@ -8,7 +8,7 @@
  * @author Chuck Hagenbuch <chuck@horde.org>
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('kronolith');
 
 if (Kronolith::showAjaxView()) {
@@ -16,24 +16,17 @@ if (Kronolith::showAjaxView()) {
 }
 
 $view = Kronolith::getView('Month');
-$title = $view->date->strftime('%B %Y');
-if ($prefs->getValue('show_panel')) {
-    $bodyClass = 'rightPanel';
-}
 
-Horde::addScriptFile('tooltips.js', 'horde');
-Horde::addScriptFile('views.js', 'kronolith');
+$page_output->addScriptFile('tooltips.js', 'horde');
+$page_output->addScriptFile('views.js');
 
-require $registry->get('templates', 'horde') . '/common-header.inc';
+$page_output->header(array(
+    'body_class' => $prefs->getValue('show_panel') ? 'rightPanel' : null,
+    'title' => $view->date->strftime('%B %Y')
+));
 require KRONOLITH_TEMPLATES . '/javascript_defs.php';
-echo Horde::menu();
 $notification->notify(array('listeners' => 'status'));
-
-echo '<div id="page">';
-Kronolith::tabs();
+Kronolith::tabs($view);
 $view->html();
-echo '</div>';
-
 require KRONOLITH_TEMPLATES . '/calendar_titles.inc';
-require KRONOLITH_TEMPLATES . '/panel.inc';
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

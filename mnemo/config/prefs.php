@@ -37,12 +37,6 @@ $_prefs['show_notepad'] = array(
     'desc' => _("Should the Notepad be shown in its own column in the List view?")
 );
 
-// show the notepad options panel?
-// a value of 0 = no, 1 = yes
-$_prefs['show_panel'] = array(
-    'value' => 1
-);
-
 // user preferred sorting column
 $_prefs['sortby'] = array(
     'value' => Mnemo::SORT_DESC,
@@ -82,7 +76,15 @@ $_prefs['memo_colors'] = array(
 $_prefs['default_notepad'] = array(
     'value' => $GLOBALS['registry']->getAuth() ? $GLOBALS['registry']->getAuth() : 0,
     'type' => 'enum',
-    'desc' => _("Your default notepad:")
+    'enum' => array(),
+    'desc' => _("Your default notepad:"),
+    'on_init' => function($ui) {
+        $enum = array();
+        foreach (Mnemo::listNotepads() as $key => $val) {
+            $enum[htmlspecialchars($key)] = htmlspecialchars($val->get('name'));
+        }
+        $ui->prefs['default_notepad']['enum'] = $enum;
+    },
 );
 
 // store the notepads to diplay

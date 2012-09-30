@@ -31,22 +31,41 @@ class Horde_Imap_Client_Stub_Socket extends Horde_Imap_Client_Socket
 {
     public function getClientSort($data, $sort)
     {
-        $this->_temp['fetchresp'] = $this->_newFetchResult();
+        $this->_temp['fetchresp'] = new Horde_Imap_Client_Fetch_Results();
 
         $ids = array();
 
-        foreach ($data as $val) {
-            if (strlen($val)) {
-                $this->_tokenizeData($val);
-                $this->_parseFetch($this->_temp['token']->out[1], $this->_temp['token']->out[3]);
-                $ids[] = $this->_temp['token']->out[1];
-                unset($this->_temp['token']);
-            }
+        foreach (array_filter($data) as $val) {
+            $token = new Horde_Imap_Client_Tokenize($val);
+            $token->rewind();
+            $id_str = $token->next();
+            $token->next();
+            $token->next();
+            $this->_parseFetch($id_str, $token);
+            $ids[] = $id_str;
         }
 
-        return $this->_clientSort($ids, array(
-            'fetch_res' => $this->_temp['fetchresp']->seq,
-            'sort' => $sort
-        ));
+        return $this->_clientSortProcess($ids, $this->_temp['fetchresp'], $sort);
     }
+
+    public function getThreadSort($data)
+    {
+        $token = new Horde_Imap_Client_Tokenize($data);
+        $token->rewind();
+
+        $this->_parseThread($token);
+
+        return new Horde_Imap_Client_Data_Thread($this->_temp['threadparse'], 'uid');
+    }
+
+    public function parseNamespace($data)
+    {
+        $token = new Horde_Imap_Client_Tokenize($data);
+        $token->rewind();
+
+        $this->_parseNamespace($token);
+
+        return $this->_temp['namespace'];
+    }
+
 }

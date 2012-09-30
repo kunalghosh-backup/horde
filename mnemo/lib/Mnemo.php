@@ -493,7 +493,7 @@ class Mnemo
         }
         if ($passphrase = $GLOBALS['session']->get('mnemo', 'passphrase/' . $id)) {
             $secret = $GLOBALS['injector']->getInstance('Horde_Secret');
-            return $secret->read($secret->getKey('mnemo'), $passphrase);
+            return $secret->read($secret->getKey(), $passphrase);
         }
     }
 
@@ -509,7 +509,7 @@ class Mnemo
     public static function storePassphrase($id, $passphrase)
     {
         $secret = $GLOBALS['injector']->getInstance('Horde_Secret');
-        $GLOBALS['session']->set('mnemo', 'passphrase/' . $id, $secret->write($secret->getKey('mnemo'), $passphrase));
+        $GLOBALS['session']->set('mnemo', 'passphrase/' . $id, $secret->write($secret->getKey(), $passphrase));
     }
 
     /**
@@ -562,6 +562,7 @@ class Mnemo
             ->create();
         if (($new_default = $notepads->ensureDefaultShare()) !== null) {
             $GLOBALS['display_notepads'][] = $new_default;
+            $GLOBALS['prefs']->setValue('default_notepad', $new_default);
         }
 
         $GLOBALS['prefs']->setValue('display_notepads', serialize($GLOBALS['display_notepads']));
@@ -596,5 +597,4 @@ class Mnemo
 
         return "background: rgba($r, $g, $b, 0.5)";
     }
-
 }

@@ -245,10 +245,9 @@ class Horde_Date
                 $this->_sec   = $parts['seconds'];
             }
         } else {
-            // Use date_create() so we can catch errors with PHP 5.2. Use
-            // "new DateTime() once we require 5.3.
-            $parsed = date_create($date);
-            if (!$parsed) {
+            try {
+                $parsed = new DateTime($date);
+            } catch (Exception $e) {
                 throw new Horde_Date_Exception(sprintf(Horde_Date_Translation::t("Failed to parse time string (%s)"), $date));
             }
             $parsed->setTimezone(new DateTimeZone(date_default_timezone_get()));
@@ -417,26 +416,29 @@ class Horde_Date
     /**
      * Getter for the date and time properties.
      *
-     * @param string $name  One of 'year', 'month', 'mday', 'hour', 'min' or
-     *                      'sec'.
+     * @param string $name  One of 'year', 'month', 'mday', 'hour', 'min',
+     *                      'sec' or 'timezone' (since Horde_Date 2.0.0).
      *
-     * @return integer  The property value, or null if not set.
+     * @return integer|string  The property value, or null if not set.
      */
     public function __get($name)
     {
         if ($name == 'day') {
             $name = 'mday';
         }
-
+        if ($name[0] == '_') {
+            return null;
+        }
         return $this->{'_' . $name};
     }
 
     /**
      * Setter for the date and time properties.
      *
-     * @param string $name    One of 'year', 'month', 'mday', 'hour', 'min' or
-     *                        'sec'.
-     * @param integer $value  The property value.
+     * @param string $name           One of 'year', 'month', 'mday', 'hour',
+     *                               'min', 'sec' or 'timezone' (since
+     *                               Horde_Date 2.0.0).
+     * @param integer|string $value  The property value.
      */
     public function __set($name, $value)
     {
@@ -444,6 +446,7 @@ class Horde_Date
             $this->_initializeTimezone($value);
             return;
         }
+
         if ($name == 'day') {
             $name = 'mday';
         }

@@ -10,7 +10,7 @@
  * @author Marko Djukic <marko@oblo.com>
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('ulaform', array('admin' => true));
 
 /* Get some variables. */
@@ -59,8 +59,7 @@ Horde::startBuffer();
 $fieldform->renderActive(new Horde_Form_Renderer(), $vars, Horde::url('deletefield.php'), 'post');
 $view->main = Horde::endBuffer();
 
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo Horde::menu();
+$page_output->header();
 $notification->notify(array('listeners' => 'status'));
 echo $view->render('main');
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

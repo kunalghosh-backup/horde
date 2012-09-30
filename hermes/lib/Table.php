@@ -148,7 +148,7 @@ class Hermes_Table extends Horde_Core_Ui_Widget
         $_SESSION['horde']['tables'][$id] = $this->_config;
         $exportlink = Horde::url($GLOBALS['registry']->get('webroot', 'horde') .
                                  '/services/table/export.php');
-        $exportlink = Horde_Util::addParameter($exportlink, array('id' => $id));
+        $exportlink->add(array('id' => $id));
 
         $html .= ' &nbsp;' . Horde::link($exportlink, _("Export Data")) .
                  Horde::img('data.png', _("Export Data"), 'hspace="2"') .
@@ -235,7 +235,7 @@ class Hermes_Table extends Horde_Core_Ui_Widget
             $html .= ($secname == 'footer') ? '</tfoot>' : '</tbody>';
         }
 
-        Horde::addScriptFile('stripe.js', 'horde', true);
+        $GLOBALS['page_output']->addScriptFile('stripe.js', 'horde');
         return $html . '</table>';
     }
 

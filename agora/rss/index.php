@@ -8,7 +8,7 @@
  * @author Duck <duck@obala.net>
  */
 
-require_once dirname(__FILE__) . '/../lib/Application.php';
+require_once __DIR__ . '/../lib/Application.php';
 Horde_Registry::appInit('agora', array('authentication' => 'none'));
 
 // Show a specific scope?
@@ -39,7 +39,7 @@ if (!$rss) {
         <item>
             <title>' . htmlspecialchars($forum['forum_name']) . ' </title>
             <description>' . htmlspecialchars($forum['forum_description']) . ' </description>
-            <link>' . Horde_Util::addParameter(Horde::url('threads.php', true, -1), array('scope' => $scope, 'forum_id' => $forum['forum_id'])) . '</link>
+            <link>' . Horde::url('threads.php', true, -1)->add(array('scope' => $scope, 'forum_id' => $forum['forum_id'])) . '</link>
         </item>';
     }
 

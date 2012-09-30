@@ -188,15 +188,20 @@ class Components_Component_Source extends Components_Component_Base
         $log, Components_Helper_ChangeLog $helper, $options
     )
     {
-        $file = $helper->packageXml(
-            $log, $this->getPackageXml(), $this->_getPackageXmlPath(), $options
-        );
-        if ($file && !empty($options['commit'])) {
-            $options['commit']->add($file, $this->_directory);
+        if (empty($options['nopackage'])) {
+            $file = $helper->packageXml(
+                $log, $this->getPackageXml(), $this->_getPackageXmlPath(), $options
+            );
+            if ($file && !empty($options['commit'])) {
+                $options['commit']->add($file, $this->_directory);
+            }
         }
-        $file = $helper->changes($log, $this->_directory, $options);
-        if ($file && !empty($options['commit'])) {
-            $options['commit']->add($file, $this->_directory);
+
+        if (empty($options['nochanges'])) {
+            $file = $helper->changes($log, $this->_directory, $options);
+            if ($file && !empty($options['commit'])) {
+                $options['commit']->add($file, $this->_directory);
+            }
         }
     }
 
@@ -263,6 +268,40 @@ class Components_Component_Source extends Components_Component_Base
                 'Would set release version "%s" and api version "%s" in %s now.',
                 $rel_version,
                 $api_version,
+                $this->_getPackageXmlPath()
+            );
+        }
+        return $result;
+    }
+
+    /**
+     * Sets the state in the package.xml
+     *
+     * @param string $rel_state  The new release state.
+     * @param string $api_state  The new api state.
+     */
+    public function setState($rel_state = null, $api_state = null)
+    {
+        if (empty($options['pretend'])) {
+            $package = $this->getPackageXml();
+            $package->setState($rel_state, $api_state);
+            file_put_contents($this->_getPackageXmlPath(), (string) $package);
+            if (!empty($options['commit'])) {
+                $options['commit']->add(
+                    $this->_getPackageXmlPath(), $this->_directory
+                );
+            }
+            $result = sprintf(
+                'Set release state "%s" and api state "%s" in %s.',
+                $rel_state,
+                $api_state,
+                $this->_getPackageXmlPath()
+            );
+        } else {
+            $result = sprintf(
+                'Would set release state "%s" and api state "%s" in %s now.',
+                $rel_state,
+                $api_state,
                 $this->_getPackageXmlPath()
             );
         }

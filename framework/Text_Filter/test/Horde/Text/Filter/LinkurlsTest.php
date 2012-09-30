@@ -8,7 +8,7 @@
  * @package    Text_Filter
  * @subpackage UnitTests
  */
-require_once dirname(__FILE__) . '/Autoload.php';
+require_once __DIR__ . '/Autoload.php';
 
 class Horde_Text_Filter_LinkurlsTest extends Horde_Test_Case
 {
@@ -103,4 +103,14 @@ class Horde_Text_Filter_LinkurlsTest extends Horde_Test_Case
                                       'linkurls',
                                       array('target' => null)));
     }
+
+    public function testBug11116()
+    {
+        $text = file_get_contents(__DIR__ . '/fixtures/bug_11116.txt');
+
+        $this->assertNotNull(
+            Horde_Text_Filter::filter($text, 'linkurls')
+        );
+    }
+
 }

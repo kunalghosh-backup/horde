@@ -2,7 +2,7 @@
 /**
  * Prepare the test setup.
  */
-require_once dirname(__FILE__) . '/../Base.php';
+require_once __DIR__ . '/../Base.php';
 
 /**
  * Copyright 2010-2012 Horde LLC (http://www.horde.org/)
@@ -174,6 +174,14 @@ class Horde_Share_Test_Sql_Base extends Horde_Share_Test_Base
         $this->removeShare();
     }
 
+    /**
+     * @depends testGetShare
+     */
+    public function testRenameShare()
+    {
+        $this->renameShare();
+    }
+
     public function testCallback()
     {
         $this->callback(new Horde_Share_Object_Sql(array()));
@@ -181,7 +189,7 @@ class Horde_Share_Test_Sql_Base extends Horde_Share_Test_Base
 
     public static function setUpBeforeClass()
     {
-        require_once dirname(__FILE__) . '/../migration/sql.php';
+        require_once __DIR__ . '/../migration/sql.php';
         migrate_sql(self::$db);
 
         $group = new Horde_Group_Test();

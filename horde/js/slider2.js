@@ -7,23 +7,26 @@
  *
  * Usage:
  * ------
- * slider = new Slider2(track, opts);
+ * slider = new Slider2(track, { options });
  *
  *   track - (element|string) TODO
- *   opts - (object) TODO
+ *   options - (object) TODO
  *
  * Custom Events:
  * --------------
- * Custom events are triggered on the track element. The parameters given
- * below are available through the 'memo' property of the Event object.
+ * Custom events are triggered on the track element.
  *
  * Slider2:change
+ *   Fired when slidebar is released and has moved from the original value.
+ *
+ * Slider2:end
  *   Fired when slidebar is released.
- *   params: NONE
  *
  * Slider2:slide
  *   Fired when slidebar is moved.
- *   params: NONE
+ *
+ * Slider2:start
+ *   Fired when slidebar is clicked on.
  *
  *
  * Adapted from script.aculo.us slider.js v1.8.0
@@ -54,6 +57,7 @@
  */
 
 var Slider2 = Class.create({
+
     value: 0,
 
     initialize: function(track, options)
@@ -87,10 +91,10 @@ var Slider2 = Class.create({
             this._initScroll();
         }
 
-        this.eventMU = this._endDrag.bindAsEventListener(this);
-        this.eventMM = this._update.bindAsEventListener(this);
-
         [ this.handle, this.track ].invoke('observe', 'mousedown', this._startDrag.bindAsEventListener(this));
+
+        document.observe('mouseup', this._endDrag.bindAsEventListener(this));
+        document.observe('mousemove', this._update.bindAsEventListener(this));
     },
 
     _initScroll: function()
@@ -121,9 +125,7 @@ var Slider2 = Class.create({
             this.curroffsets = this.track.cumulativeOffset();
             this.offsetY = e.pointerY() - hoffsets[1] + this.sbup.offsetHeight;
             this.active = true;
-
-            document.observe('mouseup', this.eventMU);
-            document.observe('mousemove', this.eventMM);
+            this.track.fire('Slider2:start');
         }
 
         e.stop();
@@ -144,12 +146,12 @@ var Slider2 = Class.create({
 
     _endDrag: function(e)
     {
-        if (this.active && this.dragging) {
-            this._updateFinished();
-            e.stop();
-
-            document.stopObserving('mouseup', this.eventMU);
-            document.stopObserving('mousemove', this.eventMM);
+        if (this.active) {
+            if (this.dragging) {
+                this._updateFinished();
+                e.stop();
+            }
+            this.track.fire('Slider2:end');
         }
         this.active = this.dragging = false;
     },

@@ -21,12 +21,12 @@ function _no_access($status, $reason, $body)
     exit;
 }
 
-require_once dirname(__FILE__) . '/../lib/Application.php';
+require_once __DIR__ . '/../lib/Application.php';
 Horde_Registry::appInit('kronolith', array('authentication' => 'none', 'session_control' => 'readonly'));
 
 $calendar = Horde_Util::getFormData('c');
 try {
-    $share = $kronolith_shares->getShare($calendar);
+    $share = $injector->getInstance('Kronolith_Shares')->getShare($calendar);
 } catch (Exception $e) {
     _no_access(404, 'Not Found',
                sprintf(_("The requested feed (%s) was not found on this server."),
@@ -116,7 +116,7 @@ foreach ($events as $day_events) {
         }
         $modified = new Horde_Date($modified);
         /* Description. */
-        $desc = htmlspecialchars($event->description);
+        $desc = $event->isPrivate() ? '' : htmlspecialchars($event->description);
         if (strlen($desc)) {
             $desc .= '<br /><br />';
         }
@@ -128,15 +128,14 @@ foreach ($events as $day_events) {
             $desc .= $event->end->strftime($prefs->getValue('date_format')) . ' ' . $event->end->format($twentyFor ? 'H:i' : 'h:ia');
         }
         /* Attendees. */
-        $attendees = array();
-        foreach ($event->attendees as $attendee => $status) {
-            $attendees[] = empty($status['name']) ? $attendee : Horde_Mime_Address::trimAddress($status['name'] . (strpos($attendee, '@') === false ? '' : ' <' . $attendee . '>'));
-        }
-        if (count($attendees)) {
-            $desc .= '<br />' . _("Who:") . ' ' . htmlspecialchars(implode(', ', $attendees));
-        }
-        if (strlen($event->location)) {
-            $desc .= '<br />' . _("Where:") . ' ' . htmlspecialchars($event->location);
+        if (!$event->isPrivate()) {
+            $attendees = Kronolith::getAttendeeEmailList($event->attendees);
+            if (count($attendees)) {
+                $desc .= '<br />' . _("Who:") . ' ' . htmlspecialchars(strval($attendees));
+            }
+            if (strlen($event->location)) {
+                $desc .= '<br />' . _("Where:") . ' ' . htmlspecialchars($event->location);
+            }
         }
         $desc .= '<br />' . _("Event Status:") . ' ' . Kronolith::statusToString($event->status);
 

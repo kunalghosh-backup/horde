@@ -10,12 +10,12 @@
  * @author Daniel Collins <horde_dev@argentproductions.com>
  */
 
-require_once dirname(__FILE__) . '/../lib/Application.php';
+require_once __DIR__ . '/../lib/Application.php';
 $vilma = Horde_Registry::appInit('vilma');
 
 /* Only admin should be using this. */
 if (!Vilma::hasPermission($domain)) {
-    $registry->authenticateFailure('vilma');
+    throw new Horde_Exception_AuthenticationFailure();
 }
 $vars = Variables::getDefaultVariables();
 
@@ -93,18 +93,7 @@ if (!isset($vars->mode) || $vars->retry) {
 /* Render the form. */
 $renderer = new Horde_Form_Renderer();
 
-$template = $injector->createInstance('Horde_Template');
-
-Horde::startBuffer();
-$form->renderActive($renderer, $vars, Horde::url('users/editAlias.php'), 'post');
-$template->set('main', Horde::endBuffer());
-
-$template->set('menu', Horde::menu());
-
-Horde::startBuffer();
+$page_output->header();
 $notification->notify(array('listeners' => 'status'));
-$template->set('notify', Horde::endBuffer());
-
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo $template->fetch(VILMA_TEMPLATES . '/main/main.html');
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$form->renderActive($renderer, $vars, Horde::url('users/editAlias.php'), 'post');
+$page_output->footer();

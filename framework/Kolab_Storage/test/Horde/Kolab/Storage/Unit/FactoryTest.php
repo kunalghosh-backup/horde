@@ -15,7 +15,7 @@
 /**
  * Prepare the test setup.
  */
-require_once dirname(__FILE__) . '/../Autoload.php';
+require_once __DIR__ . '/../Autoload.php';
 
 /**
  * Test the factory.
@@ -37,7 +37,7 @@ extends Horde_Kolab_Storage_TestCase
 {
     public function testCreationFromParams()
     {
-        $factory = new Horde_Kolab_Storage_Factory(array('driver' => 'mock'));
+        $factory = new Horde_Kolab_Storage_Factory(array('driver' => 'mock', 'logger' => $this->getMock('Horde_Log_Logger')));
         $this->assertInstanceOf(
             'Horde_Kolab_Storage',
             $factory->create()
@@ -77,17 +77,6 @@ extends Horde_Kolab_Storage_TestCase
         );
     }
 
-    public function testMockParser()
-    {
-        $factory = new Horde_Kolab_Storage_Factory(
-            array('driver' => 'mock')
-        );
-        $this->assertInstanceOf(
-            'Horde_Kolab_Storage_Data_Parser',
-            $factory->createDriver()->getParser()
-        );
-    }
-
     /**
      * @expectedException Horde_Kolab_Storage_Exception
      */
@@ -110,39 +99,6 @@ extends Horde_Kolab_Storage_TestCase
         );
     }
 
-    public function testLogDecoration()
-    {
-        $factory = new Horde_Kolab_Storage_Factory(
-            array(
-                'driver' => 'mock',
-                'logger' => $this->getMockLogger()
-            )
-        );
-        $this->assertInstanceOf(
-            'Horde_Kolab_Storage_List_Decorator_Log',
-            $factory->create()->getList()
-        );
-    }
-
-    public function testCacheDecoration()
-    {
-        $factory = new Horde_Kolab_Storage_Factory(
-            array(
-                'driver' => 'mock',
-                'params' => array(
-                    'username' => 'test',
-                    'host' => 'localhost',
-                    'port' => 143,
-                ),
-                'cache' => new Horde_Cache(new Horde_Cache_Storage_Mock())
-            )
-        );
-        $this->assertInstanceOf(
-            'Horde_Kolab_Storage_List_Decorator_Cache',
-            $factory->create()->getList()
-        );
-    }
-
     public function testTimerDecoration()
     {
         $logger = $this->getMockLogger();
@@ -150,23 +106,12 @@ extends Horde_Kolab_Storage_TestCase
             array(
                 'driver' => 'mock',
                 'logger' => $logger,
-                'timelog' => $logger,
+                'log' => array('driver_time'),
             )
         );
         $this->assertInstanceOf(
             'Horde_Kolab_Storage_Driver_Decorator_Timer',
             $factory->createDriver()
-        );
-    }
-
-    public function testCreateTypeReturnsType()
-    {
-        $factory = new Horde_Kolab_Storage_Factory();
-        $this->assertInstanceOf(
-            'Horde_Kolab_Storage_Folder_Type',
-            $factory->createFolderType(
-                'event'
-            )
         );
     }
 
@@ -203,47 +148,6 @@ extends Horde_Kolab_Storage_TestCase
         );
         $this->assertSame(
             $history, $factory->createHistory('test')
-        );
-    }
-
-    public function testFolder()
-    {
-        $factory = new Horde_Kolab_Storage_Factory();
-        $this->assertInstanceOf(
-            'Horde_Kolab_Storage_Folder',
-            $factory->createFolder(
-                $this->getMock('Horde_Kolab_Storage_List'),
-                'INBOX'
-            )
-        );
-    }
-
-    public function testFormat()
-    {
-        $factory = new Horde_Kolab_Storage_Factory();
-        $this->assertInstanceOf(
-            'Horde_Kolab_Format',
-            $factory->createFormat('Xml', 'contact', 1)
-        );
-    }
-
-    public function testSameFormat()
-    {
-        $factory = new Horde_Kolab_Storage_Factory();
-        $this->assertSame(
-            $factory->createFormat('Xml', 'contact', 1),
-            $factory->createFormat('Xml', 'contact', 1)
-        );
-    }
-
-    public function testFormatParameters()
-    {
-        $factory = new Horde_Kolab_Storage_Factory(
-            array('format' => array('timelog' => true))
-        );
-        $this->assertInstanceOf(
-            'Horde_Kolab_Format_Decorator_Timed',
-            $factory->createFormat('Xml', 'contact', 1)
         );
     }
 

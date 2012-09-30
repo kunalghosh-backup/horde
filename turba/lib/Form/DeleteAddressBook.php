@@ -30,19 +30,20 @@ class Turba_Form_DeleteAddressBook extends Horde_Form
         $this->addHidden('', 'a', 'text', true);
         $this->addVariable(sprintf(_("Really delete the address book \"%s\"? This cannot be undone and all contacts in this address book will be permanently removed."), $this->_addressbook->get('name')), 'desc', 'description', false);
 
-        $this->setButtons(array(_("Delete"), _("Cancel")));
+        $this->setButtons(array(
+            array('class' => 'horde-delete', 'value' => _("Delete")),
+            array('class' => 'horde-cancel', 'value' => _("Cancel")),
+        ));
     }
 
     /**
-     * @TODO Remove share from 'addressbooks' pref
-     *
      * @throws Turba_Exception
      */
     public function execute()
     {
         // If cancel was clicked, return false.
         if ($this->_vars->get('submitbutton') == _("Cancel")) {
-            return false;
+            Horde::url('', true)->redirect();
         }
 
         if (!$GLOBALS['registry']->getAuth() ||
@@ -50,7 +51,9 @@ class Turba_Form_DeleteAddressBook extends Horde_Form
             throw new Turba_Exception(_("You do not have permissions to delete this address book."));
         }
 
-        $driver = $GLOBALS['injector']->getInstance('Turba_Factory_Driver')->create($this->_addressbook->getName());
+        $driver = $GLOBALS['injector']
+            ->getInstance('Turba_Factory_Driver')
+            ->create($this->_addressbook->getName());
         if ($driver->hasCapability('delete_all')) {
             try {
                 $driver->deleteAll();
@@ -62,7 +65,9 @@ class Turba_Form_DeleteAddressBook extends Horde_Form
 
         // Address book successfully deleted from backend, remove the share.
         try {
-            $GLOBALS['turba_shares']->removeShare($this->_addressbook);
+            $GLOBALS['injector']
+                ->getInstance('Turba_Shares')
+                ->removeShare($this->_addressbook);
         } catch (Horde_Share_Exception $e) {
             Horde::logMessage($e->getMessage(), 'ERR');
             throw new Turba_Exception($e);
@@ -71,14 +76,5 @@ class Turba_Form_DeleteAddressBook extends Horde_Form
         if ($GLOBALS['session']->get('turba', 'source') == Horde_Util::getFormData('deleteshare')) {
             $GLOBALS['session']->remove('turba', 'source');
         }
-
-        $abooks = json_decode($GLOBALS['prefs']->getValue('addressbooks'), true);
-        if (($pos = array_search($this->_addressbook->getName(), $abooks)) !== false) {
-            unset($abooks[$pos]);
-            $GLOBALS['prefs']->setValue('addressbooks', json_encode($abooks));
-        }
-
-        return true;
     }
-
 }

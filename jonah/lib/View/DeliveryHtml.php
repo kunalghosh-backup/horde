@@ -52,16 +52,17 @@ class Jonah_View_DeliveryHtml extends Jonah_View_Base
         // @TODO: This is ugly. storage driver shouldn't be rendering any display
         // refactor this to use individual views possibly with a choice of different templates
         $template->set('stories', $GLOBALS['injector']->getInstance('Jonah_Driver')->renderChannel($criteria['feed'], $criteria['format']));
-        $template->set('menu', Horde::menu(array('menu_obj' => true)));
 
         // Buffer the notifications and send to the template
         Horde::startBuffer();
         $GLOBALS['notification']->notify(array('listeners' => 'status'));
         $template->set('notify', Horde::endBuffer());
 
-        require $registry->get('templates', 'horde') . '/common-header.inc';
+        $GLOBALS['page_output']->header(array(
+            'title' => $title
+        ));
         echo $template->fetch(JONAH_TEMPLATES . '/delivery/html.html');
-        require $registry->get('templates', 'horde') . '/common-footer.inc';
+        $GLOBALS['page_output']->footer();
     }
 
 }

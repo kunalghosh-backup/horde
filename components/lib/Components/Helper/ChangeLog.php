@@ -48,7 +48,7 @@ class Components_Helper_ChangeLog
     }
 
     /**
-     * Update CHANGES file.
+     * Update package.xml file.
      *
      * @param string                 $log     The log entry.
      * @param Horde_Pear_Package_Xml $xml     The package xml handler.
@@ -64,7 +64,7 @@ class Components_Helper_ChangeLog
                 $xml->addNote($log);
                 file_put_contents($file, (string) $xml);
                 $this->_output->ok(
-                    'Added new note to ' . $file . '.'
+                    'Added new note to version ' . $xml->getVersion() . ' of ' . $file . '.'
                 );
             } else {
                 $this->_output->info(

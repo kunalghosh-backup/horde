@@ -21,40 +21,55 @@ class IMP_Mime_Viewer_Images extends Horde_Mime_Viewer_Images
      * @var array
      */
     protected $_capability = array(
-        'full' => true,
+        'full' => false,
         'info' => true,
         'inline' => true,
-        'raw' => true
+        'raw' => false
     );
 
     /**
      */
     public function canRender($mode)
     {
-        /* For mimp - allow rendering of attachments inline (on the view
-         * parts page). */
-        return (($mode == 'inline') && (IMP::getViewMode() == 'mimp'))
-            ? true
-            : parent::canRender($mode);
+        global $browser, $registry;
+
+        switch ($mode) {
+        case 'full':
+        case 'raw':
+            /* Only display raw images we know the browser supports, and we
+             * know can't cause any sort of security issue. */
+            if ($browser->isViewable($this->_getType())) {
+                return true;
+            }
+            break;
+
+        case 'inline':
+            /* For minimal view: allow rendering of attachments inline (on the
+             * view parts page). */
+            if ($registry->getView() == $registry::VIEW_MINIMAL) {
+                return true;
+            }
+            break;
+        }
+
+        return parent::canRender($mode);
     }
 
     /**
      * Return the full rendered version of the Horde_Mime_Part object.
      *
      * URL parameters used by this function:
-     * <pre>
-     * imp_img_view - (string) One of the following:
-     *   data - Output the image directly.
-     *   view_convert - Convert the image to browser-viewable format and
-     *                  display.
-     *   view_thumbnail - Create thumbnail and display.
-     * </pre>
+     *   - imp_img_view: (string) One of the following:
+     *     - data: Output the image directly.
+     *     - view_convert: Convert the image to browser-viewable format and
+     *                     display.
+     *     - view_thumbnail: Create thumbnail and display.
      *
      * @return array  See parent::render().
      */
     protected function _render()
     {
-        switch (Horde_Util::getFormData('imp_img_view')) {
+        switch ($GLOBALS['injector']->getInstance('Horde_Variables')->imp_img_view) {
         case 'data':
             /* If calling page is asking us to output data, do that without
              * any further delay and exit. */
@@ -90,7 +105,7 @@ class IMP_Mime_Viewer_Images extends Horde_Mime_Viewer_Images
             } else {
                 /* For mimp - allow rendering of attachments inline (on the
                  * view parts page). */
-                $showimg = (IMP::getViewMode() == 'mimp');
+                $showimg = ($GLOBALS['registry']->getView() == Horde_Registry::VIEW_MINIMAL);
             }
 
             if (!$showimg) {
@@ -112,13 +127,19 @@ class IMP_Mime_Viewer_Images extends Horde_Mime_Viewer_Images
         $status = new IMP_Mime_Status(_("Your browser does not support inline display of this image type."));
 
         /* See if we can convert to an inline browser viewable form. */
-        if ($GLOBALS['browser']->hasFeature('javascript')) {
+        switch ($GLOBALS['registry']->getView()) {
+        case Horde_Registry::VIEW_MINIMAL:
+            // Do nothing.
+            break;
+
+        default:
             $img = $this->_getHordeImageOb(false);
             if ($img &&
                 $GLOBALS['browser']->isViewable($img->getContentType())) {
                 $convert_link = $this->getConfigParam('imp_contents')->linkViewJS($this->_mimepart, 'view_attach', _("HERE"), array('params' => array('imp_img_view' => 'view_convert')));
                 $status->addText(sprintf(_("Click %s to convert the image file into a format your browser can attempt to view."), $convert_link));
             }
+            break;
         }
 
         return array(
@@ -145,10 +166,13 @@ class IMP_Mime_Viewer_Images extends Horde_Mime_Viewer_Images
         $status = new IMP_Mime_Status(_("This is a thumbnail of an image attachment."));
         $status->icon('mime/image.png');
 
-        if ($GLOBALS['browser']->hasFeature('javascript')) {
-            $status->addText($this->getConfigParam('imp_contents')->linkViewJS($this->_mimepart, 'view_attach', $this->_outputImgTag('view_thumbnail', _("View Attachment")), null, null, null));
-        } else {
+        switch ($GLOBALS['registry']->getView()) {
+        case Horde_Registry::VIEW_MINIMAL:
             $status->addText(Horde::link($this->getConfigParam('imp_contents')->urlView($this->_mimepart, 'view_attach')) . $this->_outputImgTag('view_thumbnail', _("View Attachment")) . '</a>');
+            break;
+
+        default:
+            $status->addText($this->getConfigParam('imp_contents')->linkViewJS($this->_mimepart, 'view_attach', $this->_outputImgTag('view_thumbnail', _("View Attachment")), null, null, null));
         }
 
         return array(
@@ -223,7 +247,7 @@ class IMP_Mime_Viewer_Images extends Horde_Mime_Viewer_Images
             }
             return $img;
         } catch (Horde_Exception $e) {
-            Horde::logMessage($e, 'DEBUG');
+            Horde::log($e, 'DEBUG');
         }
 
         return false;

@@ -1,11 +1,9 @@
 <?php
 /**
  * Contacts selection page.
+ * Usable in both traditional and dynamic views.
  *
  * URL parameters:
- *   - formfield: (string) Overrides the form field to fill on closing the
- *                window.
- *   - formname: (string) Name of the calling form (defaults to 'compose').
  *   - sa: (string) List of selected addresses.
  *   - search: (string) Search term (defaults to '' which lists everyone).
  *   - searched: (boolean) Indicates we have already searched at least once.
@@ -23,10 +21,17 @@
  * @package  IMP
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('imp', array('authentication' => 'horde'));
 
-$vars = Horde_Variables::getDefaultVariables();
+/* Sanity checking. */
+if (!$session->get('imp', 'csearchavail')) {
+    $e = new IMP_Exception('Addressbook not available on this system.');
+    $e->logged = true;
+    throw $e;
+}
+
+$vars = $injector->getInstance('Horde_Variables');
 
 /* Get the lists of address books through the API. */
 $source_list = $registry->call('contacts/sources');
@@ -38,24 +43,18 @@ if (!isset($vars->source) || !isset($source_list[$vars->source])) {
     $vars->source = key($source_list);
 }
 
-$formname = isset($vars->formname)
-    ? filter_var($vars->formname, FILTER_SANITIZE_STRING)
-    : 'compose';
-
-$search_params = IMP::getAddressbookSearchParams();
-$apiargs = array(
-    'addresses' => array($vars->search),
-    'addressbooks' => array($vars->source),
-    'fields' => $search_params['fields']
-);
-
-$addresses = array();
+$a_list = array();
 if ($vars->searched || $prefs->getValue('display_contact')) {
-    $results = $registry->call('contacts/search', $apiargs);
-    foreach ($results as $r) {
-        /* The results list returns an array for each source searched. Make
-         * it all one array instead. */
-        $addresses = array_merge($addresses, $r);
+    $search_params = IMP::getAddressbookSearchParams();
+    $csearch = $registry->call('contacts/search', array($vars->get('search', ''), array(
+        'fields' => $search_params['fields'],
+        'returnFields' => array('email', 'name'),
+        'rfc822Return' => true,
+        'sources' => array($vars->source)
+    )));
+
+    foreach ($csearch as $val) {
+        $a_list[] = htmlspecialchars(strval($val), ENT_QUOTES, 'UTF-8');
     }
 }
 
@@ -68,54 +67,47 @@ foreach (explode('|', $vars->sa) as $addr) {
     }
 }
 
-/* Prepare the contacts template. */
-$template = $injector->createInstance('Horde_Template');
-$template->setOption('gettext', true);
+/* Prepare the contacts view. */
+$view = new Horde_View(array(
+    'templatePath' => IMP_TEMPLATES . '/contacts'
+));
+$view->addHelper('FormTag');
+$view->addHelper('Tag');
+$view->addHelper('Text');
 
-$template->set('action', Horde::url('contacts.php')->unique());
-$template->set('formname', $formname);
-$template->set('formInput', Horde_Util::formInput());
-$template->set('search', htmlspecialchars($vars->search));
+$view->a_list = $a_list;
+$view->action = Horde::url('contacts.php')->unique();
+$view->formInput = Horde_Util::formInput();
+$view->sa = $selected_addresses;
+$view->search = $vars->search;
+$view->to_only = intval($vars->to_only);
+
 if (count($source_list) > 1) {
-    $template->set('multiple_source', true);
     $s_list = array();
     foreach ($source_list as $key => $select) {
-        $s_list[] = array('val' => $key, 'selected' => ($key == $vars->source), 'label' => htmlspecialchars($select));
+        $s_list[] = array(
+            'label' => htmlspecialchars($select),
+            'selected' => ($key == $vars->source),
+            'val' => $key
+        );
     }
-    $template->set('source_list', $s_list);
+    $view->source_list = $s_list;
 } else {
-    $template->set('source_list', key($source_list));
+    $view->source_list = key($source_list);
 }
-
-$a_list = array();
-foreach ($addresses as $addr) {
-    if (!empty($addr['email'])) {
-        if (strpos($addr['email'], ',') !== false) {
-            $a_list[] = @htmlspecialchars(Horde_Mime_Address::encode($addr['name'], 'personal') . ': ' . $addr['email'] . ';', ENT_QUOTES, 'UTF-8');
-        } else {
-            $mbox_host = explode('@', $addr['email']);
-            if (isset($mbox_host[1])) {
-                $a_list[] = @htmlspecialchars(Horde_Mime_Address::writeAddress($mbox_host[0], $mbox_host[1], $addr['name']), ENT_QUOTES, 'UTF-8');
-            }
-        }
-    }
-}
-$template->set('a_list', $a_list);
-$template->set('cc', intval(!$vars->to_only));
-$template->set('sa', $selected_addresses);
-
-$js = array(
-    'ImpContacts.formname' => $formname,
-    'ImpContacts.to_only' => intval($vars->to_only)
-);
-if (isset($vars->formfield)) {
-    $js['ImpContacts.formfield'] = $vars->formfield;
-}
-Horde::addInlineJsVars($js);
 
 /* Display the form. */
-$title = _("Address Book");
-Horde::addScriptFile('contacts.js', 'imp');
-require IMP_TEMPLATES . '/common-header.inc';
-echo $template->fetch(IMP_TEMPLATES . '/imp/contacts/contacts.html');
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->addScriptFile('hordecore.js', 'horde');
+$page_output->addScriptFile('contacts.js');
+$page_output->addInlineJsVars(array(
+    'ImpContacts.text' => array(
+        'closed' => _("The message being composed has been closed."),
+        'select' => _("You must select an address first.")
+    )
+));
+
+$page_output->topbar = $page_output->sidebar = false;
+
+IMP::header(_("Address Book"));
+echo $view->render('contacts');
+$page_output->footer();

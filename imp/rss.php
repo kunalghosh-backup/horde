@@ -13,7 +13,7 @@
  * @package  IMP
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 try {
     Horde_Registry::appInit('imp', array('authentication' => 'throw'));
 } catch (Horde_Exception $e) {
@@ -52,7 +52,7 @@ $imp_mailbox = $mailbox->getListOb();
 $total_num = count($imp_mailbox);
 $unseen_num = $mailbox->vinbox
     ? $total_num
-    : $imp_mailbox->unseenMessages(Horde_Imap_Client::SORT_RESULTS_COUNT);
+    : $imp_mailbox->unseenMessages(Horde_Imap_Client::SEARCH_RESULTS_COUNT);
 
 $query = new Horde_Imap_Client_Search_Query();
 if ($new_mail) {
@@ -66,14 +66,14 @@ if (count($ids)) {
     $overview = $imp_mailbox->getMailboxArray(array_slice($ids[strval($mailbox)], 0, 20), array('preview' => $prefs->getValue('preview_enabled')));
 
     foreach ($overview['overview'] as $ob) {
-        $from_addr = $imp_ui->getFrom($ob['envelope'], array('fullfrom' => true));
+        $from_addr = $imp_ui->getFrom($ob['envelope']);
         $items[] = array_map('htmlspecialchars', array(
             'title' => $imp_ui->getSubject($ob['envelope']->subject),
             'pubDate' => $ob['envelope']->date->format('r'),
             'description' => isset($ob['preview']) ? $ob['preview'] : '',
             'url' => Horde::url($mailbox->url('message.php', $ob['uid'], $mailbox), true, array('append_session' => -1)),
-            'fromAddr' => $from_addr['fullfrom'],
-            'toAddr' => Horde_Mime_Address::addrArray2String($ob['envelope']->to, array('charset' => 'UTF-8'))
+            'fromAddr' => strval($from_addr['from_list']),
+            'toAddr' => strval($ob['envelope']->to)
         ));
     }
 }
@@ -82,14 +82,18 @@ $description = ($total_num == 0)
     ? _("No Messages")
     : sprintf(_("%u of %u messages in %s unread."), $unseen_num, $total_num, $mailbox->label);
 
-$t = $injector->createInstance('Horde_Template');
-$t->set('charset', 'UTF-8');
-$t->set('xsl', Horde_Themes::getFeedXsl());
-$t->set('pubDate', htmlspecialchars(date('r')));
-$t->set('desc', htmlspecialchars($description));
-$t->set('title', htmlspecialchars($registry->get('name') . ' - ' . $mailbox->label));
-$t->set('items', $items, true);
-$t->set('url', htmlspecialchars(Horde::url($mailbox->url('message.php'), true, array('append_session' => -1))));
-$t->set('rss_url', htmlspecialchars(Horde::url('rss.php', true, array('append_session' => -1))));
+$view = new Horde_View(array(
+    'templatePath' => IMP_TEMPLATES . '/rss'
+));
+$view->addHelper('Text');
+
+$view->desc = $description;
+$view->items = $items;
+$view->pubDate = date('r');
+$view->rss_url = Horde::url('rss.php', true, array('append_session' => -1));
+$view->title = $registry->get('name') . ' - ' . $mailbox->label;
+$view->url = Horde::url($mailbox->url('message.php'), true, array('append_session' => -1));
+$view->xsl = Horde_Themes::getFeedXsl();
+
 $browser->downloadHeaders('mailbox.rss', 'text/xml', true);
-echo $t->fetch(IMP_TEMPLATES . '/rss/mailbox.rss');
+echo $view->render('mailbox.rss');

@@ -12,7 +12,7 @@
  * @author Michael J. Rubinsky <mrubinsk@horde.org>
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('ansel');
 
 // Get all the form data
@@ -174,9 +174,11 @@ case 'modify':
     $vars->set('image_originalDate', $image->originalDate);
     $vars->set('image_uploaded', $image->uploaded);
 
-    require $registry->get('templates', 'horde') . '/common-header.inc';
+    $page_output->header(array(
+        'title' => $title
+    ));
     $form->renderActive($renderer, $vars, Horde::url('image.php'), 'post', 'multipart/form-data');
-    require $registry->get('templates', 'horde') . '/common-footer.inc';
+    $page_output->footer();
     exit;
 
 case 'savecloseimage':
@@ -362,25 +364,25 @@ case 'resizeedit':
         $y2 = $geometry['height'];
 
         // js and css files
-        Horde::addScriptFile('builder.js', 'horde');
-        Horde::addScriptFile('effects.js', 'horde');
-        Horde::addScriptFile('controls.js', 'horde');
-        Horde::addScriptFile('dragdrop.js', 'horde');
-        Horde::addScriptFile('cropper.js');
+        $page_output->addScriptFile('scriptaculous/builder.js', 'horde');
+        $page_output->addScriptFile('scriptaculous/effects.js', 'horde');
+        $page_output->addScriptFile('scriptaculous/controls.js', 'horde');
+        $page_output->addScriptFile('scriptaculous/dragdrop.js', 'horde');
+        $page_output->addScriptFile('cropper.js');
 
-        $GLOBALS['injector']
-            ->getInstance('Horde_Themes_Css')
-            ->addThemeStylesheet('cropper.css');
+        $page_output->addThemeStylesheet('cropper.css');
     } elseif ($actionID == 'resizeedit') {
         // js and css files
         $geometry = $image->getDimensions('full');
-        Horde::addScriptFile('builder.js', 'horde');
-        Horde::addScriptFile('effects.js', 'horde');
-        Horde::addScriptFile('slider.js', 'horde');
-        Horde::addScriptFile('dragdrop.js', 'horde');
+        $page_output->addScriptFile('scriptaculous/builder.js', 'horde');
+        $page_output->addScriptFile('scriptaculous/effects.js', 'horde');
+        $page_output->addScriptFile('scriptaculous/controls.js', 'horde');
+        $page_output->addScriptFile('scriptaculous/dragdrop.js', 'horde');
     }
-    require $registry->get('templates', 'horde') . '/common-header.inc';
-    echo Horde::menu();
+
+    $page_output->header(array(
+        'title' => $title
+    ));
     $notification->notify(array('listeners' => 'status'));
 
     if ($actionID == 'cropedit') {
@@ -390,7 +392,7 @@ case 'resizeedit':
     } else {
         require ANSEL_TEMPLATES . '/image/edit_image.inc';
     }
-    require $registry->get('templates', 'horde') . '/common-footer.inc';
+    $page_output->footer();
     exit;
 
 case 'watermark':
@@ -553,9 +555,11 @@ case 'setwatermark':
     $form = new Ansel_Form_Watermark($vars, _("Watermark"));
     $renderer = new Horde_Form_Renderer();
 
-    require $registry->get('templates', 'horde') . '/common-header.inc';
+    $page_output->header(array(
+        'title' => $title
+    ));
     $form->renderActive($renderer, $vars, Horde::url('image.php'), 'post');
-    require $registry->get('templates', 'horde') . '/common-footer.inc';
+    $page_output->footer();
     exit;
 
 case 'previewcustomwatermark':
@@ -593,10 +597,11 @@ case 'previewrotate270':
     $title = sprintf(
         _("Preview changes for %s :: %s"), $gallery->get('name'), $image->filename);
 
-    require $registry->get('templates', 'horde') . '/common-header.inc';
-    echo Horde::menu();
+    $page_output->header(array(
+        'title' => $title
+    ));
     require ANSEL_TEMPLATES . '/image/preview_image.inc';
-    require $registry->get('templates', 'horde') . '/common-footer.inc';
+    $page_output->footer();
     exit;
 
 case 'imagerotate90':
@@ -845,10 +850,11 @@ case 'previewcrop':
             $image->filename);
         $params = $x1 . '.' . $y1 . '.' . $x2 . '.' . $y2;
 
-        require $registry->get('templates', 'horde') . '/common-header.inc';
-        echo Horde::menu();
+        $page_output->header(array(
+            'title' => $title
+        ));
         require ANSEL_TEMPLATES . '/image/preview_cropimage.inc';
-        require $registry->get('templates', 'horde') . '/common-footer.inc';
+        $page_output->footer();
     }
     exit;
 
@@ -870,8 +876,9 @@ default:
     exit;
 }
 
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo Horde::menu();
+$page_output->header(array(
+    'title' => $title
+));
 $form->renderActive($renderer, $vars, Horde::url('image.php'), 'post',
                     'multipart/form-data');
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

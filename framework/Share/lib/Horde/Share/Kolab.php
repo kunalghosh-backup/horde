@@ -144,13 +144,8 @@ class Horde_Share_Kolab extends Horde_Share_Base
      */
     private function _idEncode($id)
     {
-        $folder = $this->getList()->getFolder($id);
-        if (!method_exists($folder, 'getPrefix')) {
-            //@todo BC (remove this option later)
-            return $this->constructId($folder->getOwner(), $folder->getSubpath());
-        } else {
-            return $this->constructId($folder->getOwner(), $folder->getSubpath(), $folder->getPrefix());
-        }
+        $folder = $this->getStorage()->getFolder($id);
+        return $this->constructId($folder->getOwner(), $folder->getSubpath(), $folder->getPrefix());
     }
 
     /**
@@ -278,7 +273,7 @@ class Horde_Share_Kolab extends Horde_Share_Base
             ->dataByType($this->_type);
 
         $query = $this->getList()
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_SHARE);
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_SHARE);
 
         foreach ($list as $folder => $folder_data) {
             $data = $query->getParameters($folder);
@@ -311,13 +306,11 @@ class Horde_Share_Kolab extends Horde_Share_Base
             ->dataByType($this->_type);
 
         if (!isset($list[$this->_idDecode($id)])) {
-            $msg = sprintf('Share id %s not found', $id);
-            $this->_logger->err($msg);
-            throw new Horde_Exception_NotFound($msg);
+            throw new Horde_Exception_NotFound(sprintf('Share id %s not found', $id));
         }
 
         $query = $this->getList()
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_SHARE);
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_SHARE);
 
         $data = array_merge(
             $query->getParameters($this->_idDecode($id)),
@@ -403,9 +396,7 @@ class Horde_Share_Kolab extends Horde_Share_Base
         if (!isset($this->_listcache[$key])) {
             $shares = array_map(
                 array($this, '_idEncode'),
-                $this->getList()
-                ->getQuery()
-                ->listByType($this->_type)
+                $this->getList()->getQuery()->listByType($this->_type)
             );
             $remove = array();
             if ($params['perm'] != Horde_Perms::SHOW || empty($userid)) {
@@ -611,7 +602,20 @@ class Horde_Share_Kolab extends Horde_Share_Base
      */
     protected function _removeShare(Horde_Share_Object $share)
     {
-        $this->getList()->deleteFolder($this->_idDecode($share->getId()));
+        $this->getList()->getListManipulation()->deleteFolder($this->_idDecode($share->getId()));
+    }
+
+    /**
+     * Renames a share in the shares system.
+     *
+     * @param Horde_Share_Object $share  The share to rename.
+     * @param string $name               The share's new name.
+     *
+     * @throws Horde_Share_Exception
+     */
+    protected function _renameShare(Horde_Share_Object $share, $name)
+    {
+        $share->set('share_name', $name);
     }
 
     /**
@@ -624,7 +628,7 @@ class Horde_Share_Kolab extends Horde_Share_Base
     public function getAcl($id)
     {
         return $this->getList()
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_ACL)
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_ACL)
             ->getAcl(
                 $this->_idDecode($id)
             );
@@ -642,7 +646,7 @@ class Horde_Share_Kolab extends Horde_Share_Base
     public function setAcl($id, $user, $acl)
     {
         $this->getList()
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_ACL)
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_ACL)
             ->setAcl(
                 $this->_idDecode($id), $user, $acl
             );
@@ -659,7 +663,7 @@ class Horde_Share_Kolab extends Horde_Share_Base
     public function deleteAcl($id, $user)
     {
         $this->getList()
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_ACL)
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_ACL)
             ->deleteAcl(
                 $this->_idDecode($id), $user
             );
@@ -677,17 +681,21 @@ class Horde_Share_Kolab extends Horde_Share_Base
     public function save($id, $old_id, $data)
     {
         if ($old_id === null) {
-            $this->getList()->createFolder(
+            $this->getList()->getListManipulation()->createFolder(
                 $this->_idDecode($id), $this->_type
             );
-        } else if ($id != $old_id) {
-            $this->getList()->renameFolder(
+        } elseif ($id != $old_id) {
+            $this->getList()->getListManipulation()->renameFolder(
                 $this->_idDecode($old_id), $this->_idDecode($id), $this->_type
             );
         }
 
+        if (!empty($data['default'])) {
+            $this->getList()->getQuery()->setDefault($this->_idDecode($id));
+        }
+
         $query = $this->getList()
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_SHARE);
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_SHARE);
         if (isset($data['desc'])) {
             $query->setDescription($this->_idDecode($id), $data['desc']);
         }
@@ -701,7 +709,8 @@ class Horde_Share_Kolab extends Horde_Share_Base
             $data['delimiter'],
             $data['prefix'],
             $data['subpath'],
-            $data['folder']
+            $data['folder'],
+            $data['namespace']
         );
         $query->setParameters($this->_idDecode($id), $data);
     }

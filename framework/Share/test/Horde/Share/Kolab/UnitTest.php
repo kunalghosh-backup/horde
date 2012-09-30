@@ -15,7 +15,7 @@
 /**
  * Prepare the test setup.
  */
-require_once dirname(__FILE__) . '/../Autoload.php';
+require_once __DIR__ . '/../Autoload.php';
 
 /**
  * Unit testing for the Kolab driver.
@@ -313,8 +313,21 @@ extends PHPUnit_Framework_TestCase
                 'share_name' => 'internal_id'
             ),
             $this->list
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_SHARE)
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_SHARE)
             ->getParameters('INBOX/Calendar')
+        );
+    }
+
+    public function testSetDefault()
+    {
+        $share = $this->_getPrefilledDriver()
+            ->getShareById($this->_getId('john', 'Calendar'));
+        $share->set('default', true);
+        $share->save();
+        $this->assertTrue(
+            $this->_getPrefilledDriver()
+            ->getShareById($this->_getId('john', 'Calendar'))
+            ->get('default')
         );
     }
 
@@ -345,7 +358,7 @@ extends PHPUnit_Framework_TestCase
         $share->set('other', 'OTHER');
         $share->save();
         $result = $this->list
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_SHARE)
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_SHARE)
             ->getParameters('INBOX/test');
         $this->assertEquals(
             array(
@@ -510,7 +523,7 @@ extends PHPUnit_Framework_TestCase
         $this->assertEquals(
             'NEW',
             $this->list
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_SHARE)
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_SHARE)
             ->getDescription('INBOX/Calendar')
         );
     }
@@ -522,7 +535,7 @@ extends PHPUnit_Framework_TestCase
         $share->set('other', 'OTHER');
         $share->save();
         $result = $this->list
-            ->getQuery(Horde_Kolab_Storage_List::QUERY_SHARE)
+            ->getQuery(Horde_Kolab_Storage_List_Tools::QUERY_SHARE)
             ->getParameters('INBOX/Calendar');
         $this->assertEquals('OTHER', $result['other']);
         $this->assertEquals('internal_id', $result['share_name']);
@@ -531,7 +544,7 @@ extends PHPUnit_Framework_TestCase
     public function testListShareCache()
     {
         $storage = $this->getMock('Horde_Kolab_Storage');
-        $list = $this->getMock('Horde_Kolab_Storage_List');
+        $list = $this->getMock('Horde_Kolab_Storage_List_Tools', array(), array(), '', false, false);
         $query = $this->getMock('Horde_Kolab_Storage_List_Query_List');
         $query->expects($this->once())
             ->method('listByType')
@@ -600,17 +613,30 @@ extends PHPUnit_Framework_TestCase
         $factory = new Horde_Kolab_Storage_Factory(
             array(
                 'driver' => 'mock',
-                'queryset' => array('list' => array('queryset' => 'horde')),
+                'queries' => array(
+                    'list' => array(
+                        Horde_Kolab_Storage_List_Tools::QUERY_BASE => array(
+                            'cache' => true
+                        ),
+                        Horde_Kolab_Storage_List_Tools::QUERY_ACL => array(
+                            'cache' => true
+                        ),
+                        Horde_Kolab_Storage_List_Tools::QUERY_SHARE => array(
+                            'cache' => true
+                        ),
+                    )
+                ),
                 'params' => $data,
                 'cache'  => new Horde_Cache(
                     new Horde_Cache_Storage_Mock()
                 ),
+                'logger' => new Horde_Log_Logger()
             )
         );
         $driver = $this->_getDriver('kronolith');
         $this->storage = $factory->create();
         $this->list = $this->storage->getList();
-        $this->list->synchronize();
+        $this->list->getListSynchronization()->synchronize();
         $driver->setStorage($this->storage);
         return $driver;
     }

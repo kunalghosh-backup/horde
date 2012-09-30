@@ -85,6 +85,24 @@ class Mnemo_Api extends Horde_Registry_Api
     }
 
     /**
+     * Method for obtaining all server changes between two timestamps. Basically
+     * a wrapper around listBy(), but returns an array containing all adds,
+     * edits and deletions.
+     *
+     * @param integer $start             The starting timestamp
+     * @param integer $end               The ending timestamp.
+     *
+     * @return array  An hash with 'add', 'modify' and 'delete' arrays.
+     * @since 3.0.5
+     */
+    public function getChanges($start, $end)
+    {
+        return array('add' => $this->listBy('add', $start, null, $end),
+                     'modify' => $this->listBy('modify', $start, null, $end),
+                     'delete' => $this->listBy('delete', $start, null, $end));
+    }
+
+    /**
      * Returns an array of UIDs for notes that have had $action happen since
      * $timestamp.
      *
@@ -198,9 +216,9 @@ class Mnemo_Api extends Horde_Registry_Api
                     foreach ($components as $content) {
                         if ($content instanceof Horde_Icalendar_Vnote) {
                             $note = $storage->fromiCalendar($content);
-                            $noteId = $storage->add($note['desc'],
-                                                    $note['body'],
-                                                    !empty($note['category']) ? $note['category'] : '');
+                            $noteId = $storage->add(
+                                $note['desc'], $note['body'],
+                                !empty($note['category']) ? $note['category'] : '');
                             $ids[] = $noteId;
                         }
                     }
@@ -209,8 +227,9 @@ class Mnemo_Api extends Horde_Registry_Api
             }
 
             $note = $storage->fromiCalendar($content);
-            $noteId = $storage->add($note['desc'],
-                                    $note['body'], !empty($note['category']) ? $note['category'] : '');
+            $noteId = $storage->add(
+                $note['desc'], $note['body'],
+                !empty($note['category']) ? $note['category'] : '');
             break;
 
         default:
@@ -231,12 +250,14 @@ class Mnemo_Api extends Horde_Registry_Api
      *                               'text/plain'
      *                               'text/x-vnote'
      *                             </pre>
+     * @param array $options       Any additional options to be passed to the
+     *                             exporter.
      *
      * @return string  The requested data
      * @throws Mnemo_Exception
      * @throws Horde_Exception_PermissionDenied
      */
-    public function export($uid, $contentType)
+    public function export($uid, $contentType, array $options = array())
     {
         $storage = $GLOBALS['injector']->getInstance('Mnemo_Factory_Driver')->create();
         try {

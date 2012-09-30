@@ -52,10 +52,10 @@ class Agora_Api extends Horde_Registry_Api
     }
 
     /**
-     * Create or modify an agora forum. This is used for apps to create
-     * forums for their own use. They will not show up in the regular
-     * agora forum view since they will be using a datatree group
-     * 'agora.forums.<sope>'.
+     * Create or modify an agora forum.
+     *
+     * This is used for apps to create forums for their own use. They will not
+     * show up in the regular agora forum view.
      *
      * @param string $scope   The Horde application that is saving this forum.
      * @param string $parent  The parent forum.
@@ -284,7 +284,8 @@ class Agora_Api extends Horde_Registry_Api
         /* An agora parameter may already be present. If so it would
          * interfere; remove it. */
         if ($base_url) {
-            $base_url = Horde_Util::removeParameter($base_url, array('agora', 'message_parent_id', 'delete'));
+            $url = new Horde_Url($base_url);
+            $base_url->remove(array('agora', 'message_parent_id', 'delete'));
         }
 
         $threads = $this->getThreads($forum_name, 'message_thread', 0, $bodies, $scope, $base_url);

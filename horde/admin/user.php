@@ -8,13 +8,10 @@
  * @author Chuck Hagenbuch <chuck@horde.org>
  */
 
-require_once dirname(__FILE__) . '/../lib/Application.php';
-$permission = 'users';
-Horde_Registry::appInit('horde');
-if (!$registry->isAdmin() && 
-    !$injector->getInstance('Horde_Perms')->hasPermission('horde:administration:'.$permission, $registry->getAuth(), Horde_Perms::SHOW)) {
-    $registry->authenticateFailure('horde', new Horde_Exception(sprintf("Not an admin and no %s permission", $permission)));
-}
+require_once __DIR__ . '/../lib/Application.php';
+Horde_Registry::appInit('horde', array(
+    'permission' => array('horde:administration:users')
+));
 
 $auth = $injector->getInstance('Horde_Core_Factory_Auth')->create();
 
@@ -115,17 +112,20 @@ case 'remove_f':
 
 case 'remove':
     $f_user_name = Horde_Util::getFormData('user_name');
+    $vars->remove('user_name');
+    if (Horde_Util::getFormData('submit') == _("Cancel")) {
+        break;
+    }
     if (empty($f_user_name)) {
         $notification->push(_("You must specify a username to remove."), 'horde.message');
-    } elseif (Horde_Util::getFormData('submit') !== _("Cancel")) {
-        try {
-            $registry->removeUser($f_user_name);
-            $notification->push(sprintf(_("Successfully removed \"%s\" from the system."), $f_user_name), 'horde.success');
-        } catch (Horde_Exception $e) {
-            $notification->push(sprintf(_("There was a problem removing \"%s\" from the system: ") . $e->getMessage(), $f_user_name), 'horde.error');
-        }
+        break;
     }
-    $vars->remove('user_name');
+    try {
+        $registry->removeUser($f_user_name);
+        $notification->push(sprintf(_("Successfully removed \"%s\" from the system."), $f_user_name), 'horde.success');
+    } catch (Horde_Exception $e) {
+        $notification->push(sprintf(_("There was a problem removing \"%s\" from the system: ") . $e->getMessage(), $f_user_name), 'horde.error');
+    }
     break;
 
 case 'clear_f':
@@ -135,17 +135,20 @@ case 'clear_f':
 
 case 'clear':
     $f_user_name = Horde_Util::getFormData('user_name');
+    $vars->remove('user_name');
+    if (Horde_Util::getFormData('submit') == _("Cancel")) {
+        break;
+    }
     if (empty($f_user_name)) {
         $notification->push(_("You must specify a username to clear out."), 'horde.message');
-    } elseif (Horde_Util::getFormData('submit') !== _("Cancel")) {
-        try {
-            $registry->removeUserData($f_user_name);
-            $notification->push(sprintf(_("Successfully cleared data for user \"%s\" from the system."), $f_user_name), 'horde.success');
-        } catch (Horde_Exception $e) {
-            $notification->push(sprintf(_("There was a problem clearing data for user \"%s\" from the system: ") . $e->getMessage(), $f_user_name), 'horde.error');
-        }
+        break;
     }
-    $vars->remove('user_name');
+    try {
+        $registry->removeUserData($f_user_name);
+        $notification->push(sprintf(_("Successfully cleared data for user \"%s\" from the system."), $f_user_name), 'horde.success');
+    } catch (Horde_Exception $e) {
+        $notification->push(sprintf(_("There was a problem clearing data for user \"%s\" from the system: ") . $e->getMessage(), $f_user_name), 'horde.error');
+    }
     break;
 
 case 'update_f':
@@ -226,16 +229,17 @@ case 'removequeued':
     break;
 }
 
-Horde::addScriptFile('stripe.js', 'horde');
+$page_output->addScriptFile('stripe.js', 'horde');
 if (isset($update_form) && $auth->hasCapability('list')) {
-    Horde::addScriptFile('userupdate.js', 'horde');
-    Horde::addInlineJsVars(array(
+    $page_output->addScriptFile('userupdate.js', 'horde');
+    $page_output->addInlineJsVars(array(
         'HordeAdminUserUpdate.pass_error' => _("Passwords must match.")
     ));
 }
 
-$title = _("User Administration");
-require HORDE_TEMPLATES . '/common-header.inc';
+$page_output->header(array(
+    'title' => _("User Administration")
+));
 require HORDE_TEMPLATES . '/admin/menu.inc';
 
 if (isset($update_form) && $auth->hasCapability('list')) {
@@ -289,4 +293,4 @@ if ($auth->hasCapability('list')) {
     require HORDE_TEMPLATES . '/admin/user/nolist.inc';
 }
 
-require HORDE_TEMPLATES . '/common-footer.inc';
+$page_output->footer();

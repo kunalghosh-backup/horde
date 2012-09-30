@@ -18,7 +18,7 @@
  */
 
 if (!defined('HERMES_BASE')) {
-    define('HERMES_BASE', dirname(__FILE__). '/..');
+    define('HERMES_BASE', __DIR__. '/..');
 }
 
 if (!defined('HORDE_BASE')) {
@@ -39,11 +39,11 @@ class Hermes_Application extends Horde_Registry_Application
 {
     /**
      */
-    public $version = 'H4 (2.0-git)';
+    public $version = 'H5 (2.0-git)';
 
     /**
      */
-    protected function _init()
+    protected function _bootstrap()
     {
         $GLOBALS['injector']->bindFactory('Hermes_Driver', 'Hermes_Factory_Driver', 'create');
     }
@@ -69,88 +69,120 @@ class Hermes_Application extends Horde_Registry_Application
      */
     public function menu($menu)
     {
-        $menu->add(Horde::url('time.php'), _("My _Time"), 'hermes.png', null, null, null, basename($_SERVER['PHP_SELF']) == 'index.php' ? 'current' : null);
-        $menu->add(Horde::url('entry.php'), _("_New Time"), 'hermes.png', null, null, null, Horde_Util::getFormData('id') ? '__noselection' : null);
-        $menu->add(Horde::url('search.php'), _("_Search"), 'search.png');
+        $menu->add(Horde::url('time.php'), _("My _Time"), 'hermes-time');
+
+        $menu->add(
+            Horde::url('start.php'),
+            _("Start Watch"),
+            'hermes-start',
+            null,
+            null,
+            Horde::popupJs(Horde::url('start.php'), array('height' => 200, 'width' => 410)) . 'return false;'
+        );
+        if ($timers = @unserialize($GLOBALS['prefs']->getValue('running_timers'))) {
+            $entry = Horde::url('entry.php');
+            foreach ($timers as $i => $timer) {
+                $hours = round((float)(time() - $i) / 3600, 2);
+                $menu->add($entry->add('timer', $i),
+                           $timer['name'] . sprintf(" (%s)", $hours),
+                           'hermes-stop', null, '', null, '__noselection');
+            }
+        }
+
+        $menu->add(Horde::url('search.php'), _("_Search"), 'hermes-search');
 
         if ($GLOBALS['conf']['time']['deliverables'] &&
             $GLOBALS['registry']->isAdmin(array('permission' => 'hermes:deliverables'))) {
-            $menu->add(Horde::url('deliverables.php'), _("_Deliverables"), 'hermes.png');
+            $menu->add(Horde::url('deliverables.php'),
+                       _("_Deliverables"),
+                       'hermes-time');
         }
 
         if ($GLOBALS['conf']['invoices']['driver'] &&
             $GLOBALS['registry']->isAdmin(array('permission' => 'hermes:invoicing'))) {
-            $menu->add(Horde::url('invoicing.php'), _("_Invoicing"), 'invoices.png');
+            $menu->add(Horde::url('invoicing.php'),
+                       _("_Invoicing"),
+                       'hermes-invoices');
         }
 
         /* Administration. */
         if ($GLOBALS['registry']->isAdmin()) {
-            $menu->add(Horde::url('admin.php'), _("_Admin"), 'hermes.png');
+            $menu->add(Horde::url('admin.php'), _("_Admin"), 'hermes-time');
         }
     }
 
-    /* Sidebar method. */
+    /**
+     * Add additional items to the sidebar.
+     *
+     * @param Horde_View_Sidebar $sidebar  The sidebar object.
+     */
+    public function sidebar($sidebar)
+    {
+        $sidebar->addNewButton(
+            _("_New Time"),
+            Horde::url('entry.php')
+        );
+    }
+
+    /* Topbar method. */
 
     /**
      */
-    public function sidebarCreate(Horde_Tree_Base $tree, $parent = null,
-                                  array $params = array())
+    public function topbarCreate(Horde_Tree_Renderer_Base $tree, $parent = null,
+                                 array $params = array())
     {
         switch ($params['id']) {
         case 'menu':
-            $tree->addNode(
-                $parent . '__add',
-                $parent,
-                _("Enter Time"),
-                1,
-                false,
-                array(
+            $tree->addNode(array(
+                'id' => $parent . '__add',
+                'parent' => $parent,
+                'label' => _("Enter Time"),
+                'expanded' => false,
+                'params' => array(
                     'icon' => Horde_Themes::img('hermes.png'),
                     'url' => Horde::url('entry.php')
                 )
-            );
+            ));
 
-            $tree->addNode(
-                $parent . '__search',
-                $parent,
-                _("Search Time"),
-                1,
-                false,
-                array(
+            $tree->addNode(array(
+                'id' => $parent . '__search',
+                'parent' => $parent,
+                'label' => _("Search Time"),
+                'expanded' => false,
+                'params' => array(
                     'icon' => Horde_Themes::img('search.png'),
                     'url' => Horde::url('search.php')
                 )
-            );
+            ));
             break;
 
         case 'stopwatch':
-            $tree->addNode(
-                $parent . '__start',
-                $parent,
-                _("Start Watch"),
-                1,
-                false,
-                array(
+            $tree->addNode(array(
+                'id' => $parent . '__start',
+                'parent' => $parent,
+                'label' => _("Start Watch"),
+                'expanded' => false,
+                'params' => array(
                     'icon' => Horde_Themes::img('timer-start.png'),
-                    'url' => 'javascript:' . Horde::popupJs(Horde::url('start.php'), array('height' => 200, 'width' => 400))
+                    'url' => '#',
+                    'onclick' => Horde::popupJs(Horde::url('start.php'), array('height' => 200, 'width' => 400))
                 )
-            );
+            ));
 
             if ($timers = @unserialize($GLOBALS['prefs']->getValue('running_timers'))) {
                 $entry = Horde::url('entry.php');
                 foreach ($timers as $i => $timer) {
                     $hours = round((float)(time() - $i) / 3600, 2);
-                    $tree->addNode(
-                        $parent . '__timer_' . $i,
-                        $parent,
-                        $timer['name'] . sprintf(" (%s)", $hours),
-                        1,
-                        false,
-                        array(
+                    $tree->addNode(array(
+                        'id' => $parent . '__timer_' . $i,
+                        'parent' => $parent,
+                        'label' => $timer['name'] . sprintf(" (%s)", $hours),
+                        'expanded' => false,
+                        'params' => array(
                             'icon' => Horde_Themes::img('timer-stop.png'),
                             'url' => $entry->add('timer', $i)
                         )
-                    );
+                    ));
                 }
             }
             break;

@@ -2,7 +2,7 @@
 /**
  * Prepare the test setup.
  */
-require_once dirname(__FILE__) . '/Autoload.php';
+require_once __DIR__ . '/Autoload.php';
 
 /**
  * Copyright 2010-2012 Horde LLC (http://www.horde.org/)
@@ -581,6 +581,13 @@ class Horde_Share_Test_Base extends Horde_Test_Case
             $this->fail('Share "myshare" should be removed by now.');
         } catch (Horde_Exception_NotFound $e) {
         }
+    }
+
+    public function renameShare()
+    {
+        self::$share->renameShare(self::$shares['janeshare'], 'joeshare');
+        $this->assertArrayNotHasKey('janeshare', self::$share->listAllShares());
+        $this->assertArrayHasKey('joeshare', self::$share->listAllShares());
     }
 
     public function callback($share)

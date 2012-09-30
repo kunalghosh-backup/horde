@@ -14,14 +14,14 @@
  */
 function _getSearchUrl($vars)
 {
-    $qUrl = '';
+    $qUrl = new Horde_Url();
 
     $queue = (int)$vars->get('queue');
-    $qUrl = Horde_Util::addParameter($qUrl, array('queue' => $queue));
+    $qUrl->add(array('queue' => $queue));
 
     $summary = $vars->get('summary');
     if ($summary) {
-        $qUrl = Horde_Util::addParameter($qUrl, 'summary', $summary);
+        $qUrl->add('summary', $summary);
     }
 
     $states = $vars->get('states');
@@ -29,10 +29,10 @@ function _getSearchUrl($vars)
         foreach ($states as $type => $state) {
             if (is_array($state)) {
                 foreach ($state as $s) {
-                    $qUrl = Horde_Util::addParameter($qUrl, "states[$type][]", $s);
+                    $qUrl->add("states[$type][]", $s);
                 }
             } else {
-                $qUrl = Horde_Util::addParameter($qUrl, "states[$type]", $state);
+                $qUrl->add("states[$type]", $state);
             }
         }
     }
@@ -40,7 +40,7 @@ function _getSearchUrl($vars)
     return substr($qUrl, 1);
 }
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('whups');
 
 $renderer = new Horde_Form_Renderer();
@@ -145,8 +145,9 @@ if (($vars->get('formname') || $vars->get('summary') || $vars->get('states') ||
     }
 }
 
-$title = _("Search");
-require $registry->get('templates', 'horde') . '/common-header.inc';
+$page_output->header(array(
+    'title' => _("Search")
+));
 require WHUPS_TEMPLATES . '/menu.inc';
 
 if ($results) {
@@ -171,4 +172,4 @@ $myqueries = new Whups_View_SavedQueries(
           'results' => $qManager->listQueries($GLOBALS['registry']->getAuth(), true)));
 $myqueries->html();
 
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

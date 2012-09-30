@@ -8,12 +8,12 @@
  * @author Marko Djukic <marko@oblo.com>
  */
 
-require_once dirname(__FILE__) . '/../lib/Application.php';
+require_once __DIR__ . '/../lib/Application.php';
 $vilma = Horde_Registry::appInit('vilma');
 
 /* Only admin should be using this. */
 if (!Vilma::hasPermission()) {
-    $registry->authenticateFailure('vilma');
+    throw new Horde_Exception_AuthenticationFailure();
 }
 
 // Having a current domain doesn't make sense on this page
@@ -39,10 +39,6 @@ foreach ($domains as &$domain) {
 $template = $injector->createInstance('Horde_Template');
 $template->setOption('gettext', true);
 $template->set('domains', $domains);
-$template->set('menu', Horde::menu());
-Horde::startBuffer();
-$notification->notify(array('listeners' => 'status'));
-$template->set('notify', Horde::endBuffer());
 
 /* Set up the field list. */
 $images = array('delete' => Horde::img('delete.png', _("Delete Domain")),
@@ -50,6 +46,7 @@ $images = array('delete' => Horde::img('delete.png', _("Delete Domain")),
 $template->set('images', $images);
 
 /* Render the page. */
-require $registry->get('templates', 'horde') . '/common-header.inc';
+$page_output->header();
+$notification->notify(array('listeners' => 'status'));
 echo $template->fetch(VILMA_TEMPLATES . '/domains/index.html');
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

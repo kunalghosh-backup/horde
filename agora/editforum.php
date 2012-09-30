@@ -10,7 +10,7 @@
  * @author Marko Djukic <marko@oblo.com>
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('agora');
 
 /* Set up the forums object. */
@@ -55,18 +55,9 @@ if ($form->validate()) {
     exit;
 }
 
-/* Set up template variables. */
-$view = new Agora_View();
-$view->menu = Horde::menu();
-
-Horde::startBuffer();
-$form->renderActive(null, null, Horde::url('editforum.php'), 'post');
-$view->main = Horde::endBuffer();
-
-Horde::startBuffer();
+$page_output->header(array(
+    'title' => $title
+));
 $notification->notify(array('listeners' => 'status'));
-$view->notify = Horde::endBuffer();
-
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo $view->render('main');
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$form->renderActive(null, null, Horde::url('editforum.php'), 'post');
+$page_output->footer();

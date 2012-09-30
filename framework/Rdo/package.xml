@@ -11,14 +11,14 @@
   <email>chuck@horde.org</email>
   <active>yes</active>
  </lead>
- <date>2011-10-11</date>
- <time>14:01:13</time>
+ <date>2012-07-19</date>
+ <time>23:37:54</time>
  <version>
-  <release>1.1.1</release>
-  <api>1.1.0</api>
+  <release>2.0.0beta2</release>
+  <api>1.2.0</api>
  </version>
  <stability>
-  <release>stable</release>
+  <release>beta</release>
   <api>stable</api>
  </stability>
  <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
@@ -57,6 +57,7 @@
       </dir> <!-- /lib/Horde/Rdo/Query -->
       <file name="Base.php" role="php" />
       <file name="Exception.php" role="php" />
+      <file name="Factory.php" role="php" />
       <file name="Iterator.php" role="php" />
       <file name="List.php" role="php" />
       <file name="Mapper.php" role="php" />
@@ -68,7 +69,31 @@
    <dir name="test">
     <dir name="Horde">
      <dir name="Rdo">
+      <dir name="fixtures">
+       <file name="unit_tests.sql" role="test" />
+      </dir> <!-- /test/Horde/Rdo/fixtures -->
+      <dir name="Objects">
+       <file name="ManyToManyA.php" role="test" />
+       <file name="ManyToManyAMapper.php" role="test" />
+       <file name="ManyToManyB.php" role="test" />
+       <file name="ManyToManyBMapper.php" role="test" />
+       <file name="RelatedThing.php" role="test" />
+       <file name="RelatedThingMapper.php" role="test" />
+       <file name="SomeEagerBaseObject.php" role="test" />
+       <file name="SomeEagerBaseObjectMapper.php" role="test" />
+       <file name="SomeLazyBaseObject.php" role="test" />
+       <file name="SomeLazyBaseObjectMapper.php" role="test" />
+      </dir> <!-- /test/Horde/Rdo/Objects -->
+      <dir name="Sql">
+       <dir name="Pdo">
+        <file name="SqliteTest.php" role="test" />
+       </dir> <!-- /test/Horde/Rdo/Sql/Pdo -->
+       <file name="Base.php" role="test" />
+      </dir> <!-- /test/Horde/Rdo/Sql -->
       <file name="AllTests.php" role="test" />
+      <file name="Autoload.php" role="test" />
+      <file name="Base.php" role="test" />
+      <file name="phpunit.xml" role="test" />
      </dir> <!-- /test/Horde/Rdo -->
     </dir> <!-- /test/Horde -->
    </dir> <!-- /test -->
@@ -77,7 +102,7 @@
  <dependencies>
   <required>
    <php>
-    <min>5.2.0</min>
+    <min>5.3.0</min>
    </php>
    <pearinstaller>
     <min>1.7.0</min>
@@ -85,9 +110,16 @@
    <package>
     <name>Horde_Db</name>
     <channel>pear.horde.org</channel>
-    <min>1.0.0</min>
-    <max>2.0.0</max>
-    <exclude>2.0.0</exclude>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
+   </package>
+   <package>
+    <name>Horde_Exception</name>
+    <channel>pear.horde.org</channel>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
   </required>
  </dependencies>
@@ -110,12 +142,29 @@
    <install as="Horde/Rdo.php" name="lib/Horde/Rdo.php" />
    <install as="Horde/Rdo/Base.php" name="lib/Horde/Rdo/Base.php" />
    <install as="Horde/Rdo/Exception.php" name="lib/Horde/Rdo/Exception.php" />
+   <install as="Horde/Rdo/Factory.php" name="lib/Horde/Rdo/Factory.php" />
    <install as="Horde/Rdo/Iterator.php" name="lib/Horde/Rdo/Iterator.php" />
    <install as="Horde/Rdo/List.php" name="lib/Horde/Rdo/List.php" />
    <install as="Horde/Rdo/Mapper.php" name="lib/Horde/Rdo/Mapper.php" />
    <install as="Horde/Rdo/Query.php" name="lib/Horde/Rdo/Query.php" />
    <install as="Horde/Rdo/Query/Literal.php" name="lib/Horde/Rdo/Query/Literal.php" />
    <install as="Horde/Rdo/AllTests.php" name="test/Horde/Rdo/AllTests.php" />
+   <install as="Horde/Rdo/Autoload.php" name="test/Horde/Rdo/Autoload.php" />
+   <install as="Horde/Rdo/Base.php" name="test/Horde/Rdo/Base.php" />
+   <install as="Horde/Rdo/phpunit.xml" name="test/Horde/Rdo/phpunit.xml" />
+   <install as="Horde/Rdo/fixtures/unit_tests.sql" name="test/Horde/Rdo/fixtures/unit_tests.sql" />
+   <install as="Horde/Rdo/Objects/ManyToManyA.php" name="test/Horde/Rdo/Objects/ManyToManyA.php" />
+   <install as="Horde/Rdo/Objects/ManyToManyAMapper.php" name="test/Horde/Rdo/Objects/ManyToManyAMapper.php" />
+   <install as="Horde/Rdo/Objects/ManyToManyB.php" name="test/Horde/Rdo/Objects/ManyToManyB.php" />
+   <install as="Horde/Rdo/Objects/ManyToManyBMapper.php" name="test/Horde/Rdo/Objects/ManyToManyBMapper.php" />
+   <install as="Horde/Rdo/Objects/RelatedThing.php" name="test/Horde/Rdo/Objects/RelatedThing.php" />
+   <install as="Horde/Rdo/Objects/RelatedThingMapper.php" name="test/Horde/Rdo/Objects/RelatedThingMapper.php" />
+   <install as="Horde/Rdo/Objects/SomeEagerBaseObject.php" name="test/Horde/Rdo/Objects/SomeEagerBaseObject.php" />
+   <install as="Horde/Rdo/Objects/SomeEagerBaseObjectMapper.php" name="test/Horde/Rdo/Objects/SomeEagerBaseObjectMapper.php" />
+   <install as="Horde/Rdo/Objects/SomeLazyBaseObject.php" name="test/Horde/Rdo/Objects/SomeLazyBaseObject.php" />
+   <install as="Horde/Rdo/Objects/SomeLazyBaseObjectMapper.php" name="test/Horde/Rdo/Objects/SomeLazyBaseObjectMapper.php" />
+   <install as="Horde/Rdo/Sql/Base.php" name="test/Horde/Rdo/Sql/Base.php" />
+   <install as="Horde/Rdo/Sql/Pdo/SqliteTest.php" name="test/Horde/Rdo/Sql/Pdo/SqliteTest.php" />
   </filelist>
  </phprelease>
  <changelog>
@@ -212,7 +261,60 @@ Major improvements including inflection, eager or lazy loading of relationships 
    <stability>
     <release>stable</release>
     <api>stable</api></stability>
-   <date>2011-10-11</date>
+   <date>2012-02-22</date>
+   <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
+   <notes>
+* [rla] Fix issue with retrieving lazy fields (Bug #11012).
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>1.2.0</release>
+    <api>1.2.0</api></version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api></stability>
+   <date>2012-03-20</date>
+   <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
+   <notes>
+* [jan] Implement ArrayAccess in Horde_Rdo_Base.
+* [jan] Fix Horde_Rdo_Exception not extending Horde_Exception.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>2.0.0alpha1</release>
+    <api>1.2.0</api></version>
+   <stability>
+    <release>alpha</release>
+    <api>stable</api></stability>
+   <date>2012-07-05</date>
+   <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
+   <notes>
+* First alpha release for Horde 5.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>2.0.0beta1</release>
+    <api>1.2.0</api></version>
+   <stability>
+    <release>beta</release>
+    <api>stable</api></stability>
+   <date>2012-07-19</date>
+   <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
+   <notes>
+* First beta release for Horde 5.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>2.0.0beta2</release>
+    <api>1.2.0</api></version>
+   <stability>
+    <release>beta</release>
+    <api>stable</api></stability>
+   <date>2012-07-19</date>
    <license uri="http://www.horde.org/licenses/lgpl21">LGPL-2.1</license>
    <notes>
 * 

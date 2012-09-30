@@ -31,7 +31,7 @@ $hide_img = Horde::img('minus.png', _("Hide"), 'style="display:none"');
 </h1>
 <?php endif; ?>
 
-<table class="striped" cellspacing="0">
+<table cellspacing="0">
 <?php if ($event->recurs() &&
           ($GLOBALS['injector']->getInstance('Horde_Core_Perms')->hasAppPermission('max_events') === true ||
            $GLOBALS['injector']->getInstance('Horde_Core_Perms')->hasAppPermission('max_events') > Kronolith::countEvents())): ?>
@@ -51,11 +51,11 @@ $hide_img = Horde::img('minus.png', _("Hide"), 'style="display:none"');
 
 <!-- buttons -->
 <tr>
- <td></td>
- <td colspan="4">
+ <td class="horde-form-buttons"></td>
+ <td colspan="4" class="horde-form-buttons">
   <?php echo implode("\n", $buttons) ?>
-  <?php echo $cancelurl->link(array('class' => 'button')) . _("Cancel") . '</a>' ?>
-  <input type="button" name="resetButton" class="button" value="<?php echo _("Reset to Defaults") ?>" />
+  <input type="button" name="resetButton" value="<?php echo _("Reset to Defaults") ?>" />
+  <?php echo $cancelurl->link(array('class' => 'horde-cancel')) . _("Cancel") . '</a>' ?>
  </td>
 </tr>
 
@@ -264,7 +264,7 @@ if ($event->alarm) {
 <tr>
  <td></td>
  <td colspan="4">
-  <?php echo Horde::url('attendees.php')->link(array('class' => 'button', 'id' => 'attendees_button', 'target' => '_blank')) . _("Edit Attendees and Resources") . '</a>' ?>
+  <?php echo Horde::url('attendees.php')->link(array('class' => 'horde-button', 'id' => 'attendees_button', 'target' => '_blank')) . _("Edit Attendees and Resources") . '</a>' ?>
  </td>
 </tr>
 </tbody>
@@ -415,7 +415,7 @@ if ($event->alarm) {
  <td colspan="4">
    <input type="text" name="tags" id="tags" value="<?php echo (!empty($tags) ? htmlspecialchars($tags) : '')?>" size="40" />
    <span id="tags_loading_img" style="display:none;"><?php echo Horde::img('loading.gif', _("Loading...")) ?></span>
-   <?php $GLOBALS['injector']->getInstance('Horde_Core_Factory_Imple')->create(array('kronolith', 'TagAutoCompleter'), array('triggerId' => 'tags', 'id' => $event->uid)); ?>
+   <?php $GLOBALS['injector']->getInstance('Horde_Core_Factory_Imple')->create('Kronolith_Ajax_Imple_TagAutoCompleter', array('id' => 'tags')); ?>
  </td>
 </tr>
 <!-- spacer -->
@@ -432,11 +432,11 @@ if ($event->alarm) {
  </td>
 </tr>
 <tr>
- <td></td>
- <td colspan="4">
+ <td class="horde-form-buttons"></td>
+ <td colspan="4" class="horde-form-buttons">
   <?php echo implode("\n", $buttons) ?>
-  <?php echo $cancelurl->link(array('class' => 'button')) . _("Cancel") . '</a>' ?>
-  <input type="button" name="resetButton" class="button" value="<?php echo _("Reset to Defaults") ?>" />
+  <input type="button" name="resetButton" value="<?php echo _("Reset to Defaults") ?>" />
+  <?php echo $cancelurl->link(array('class' => 'horde-cancel')) . _("Cancel") . '</a>' ?>
   </td>
  </tr>
 </table>
