@@ -7,7 +7,7 @@
  *
  * @package Mnemo
  */
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('mnemo');
 
 /* Get the current action ID. */
@@ -54,14 +54,11 @@ case 'search_memos':
     break;
 }
 
-if ($prefs->getValue('show_panel')) {
-    $bodyClass = 'rightPanel';
-}
-
-Horde::addScriptFile('tables.js', 'horde', true);
-Horde::addScriptFile('quickfinder.js', 'horde', true);
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo Horde::menu();
+$page_output->addScriptFile('tables.js', 'horde');
+$page_output->addScriptFile('quickfinder.js', 'horde');
+$page_output->header(array(
+    'title' => $title
+));
 $notification->notify();
 require MNEMO_TEMPLATES . '/list/header.inc';
 
@@ -73,10 +70,9 @@ if (count($memos)) {
     $sortdir = $prefs->getValue('sortdir');
     $showNotepad = $prefs->getValue('show_notepad');
 
-    $baseurl = 'list.php';
+    $baseurl = Horde::url('list.php');
     if ($actionID == 'search_memos') {
-        $baseurl = Horde_Util::addParameter(
-            $baseurl,
+        $baseurl->add(
             array('actionID' => 'search_memos',
                   'search_pattern' => $search_pattern,
                   'search_type' => $search_type));
@@ -86,14 +82,13 @@ if (count($memos)) {
 
     $history = $GLOBALS['injector']->getInstance('Horde_History');
     foreach ($memos as $memo_id => $memo) {
-        $viewurl = Horde_Util::addParameter(
-            'view.php',
+        $viewurl = Horde::url('view.php')->add(
             array('memo' => $memo['memo_id'],
                   'memolist' => $memo['memolist_id']));
 
-        $memourl = Horde_Util::addParameter(
-            'memo.php', array('memo' => $memo['memo_id'],
-                              'memolist' => $memo['memolist_id']));
+        $memourl = Horde::url('memo.php')->add(
+            array('memo' => $memo['memo_id'],
+                  'memolist' => $memo['memolist_id']));
         try {
             $share = $GLOBALS['mnemo_shares']->getShare($memo['memolist_id']);
             $notepad = $share->get('name');
@@ -117,5 +112,4 @@ if (count($memos)) {
     require MNEMO_TEMPLATES . '/list/empty.inc';
 }
 
-require MNEMO_TEMPLATES . '/panel.inc';
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

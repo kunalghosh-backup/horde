@@ -6,7 +6,7 @@
  * did not receive this file, see http://www.horde.org/licenses/gpl.
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 $beatnik = Horde_Registry::appInit('beatnik');
 
 try {
@@ -16,10 +16,11 @@ try {
     Horde::url('listzones.php')->redirect();
 }
 
-$title = $_SESSION['beatnik']['curdomain']['zonename'];
-Horde::addScriptFile('stripe.js', 'horde');
+$page_output->addScriptFile('stripe.js', 'horde');
 Beatnik::notifyCommits();
-require $registry->get('templates', 'horde') . '/common-header.inc';
+$page_output->header(array(
+    'title' => $_SESSION['beatnik']['curdomain']['zonename']
+));
 require BEATNIK_TEMPLATES . '/menu.inc';
 
 // Get a list of all the fields for all record typess we'll be processing
@@ -36,9 +37,9 @@ foreach ($fields as $field_id => $field) {
     }
 }
 
-$delete = Horde_Util::addParameter(Horde::url('delete.php'), 'curdomain', $_SESSION['beatnik']['curdomain']['zonename']);
-$edit = Horde_Util::addParameter(Horde::url('editrec.php'), 'curdomain', $_SESSION['beatnik']['curdomain']['zonename']);
-$autogen = Horde_Util::addParameter(Horde::url('autogenerate.php'), 'curdomain', $_SESSION['beatnik']['curdomain']['zonename']);
+$delete = Horde::url('delete.php')->add('curdomain', $_SESSION['beatnik']['curdomain']['zonename']);
+$edit = Horde::url('editrec.php')->add('curdomain', $_SESSION['beatnik']['curdomain']['zonename']);
+$autogen = Horde::url('autogenerate.php')->add('curdomain', $_SESSION['beatnik']['curdomain']['zonename']);
 $rectypes = Beatnik::getRecTypes();
 
 require BEATNIK_TEMPLATES . '/view/header.inc';
@@ -50,5 +51,4 @@ foreach ($rectypes as $type => $typedescr) {
 }
 require BEATNIK_TEMPLATES . '/view/footer.inc';
 
-
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

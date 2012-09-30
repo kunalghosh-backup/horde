@@ -7,31 +7,33 @@
  * See the enclosed file LICENSE for license information (ASL).  If you
  * did not receive this file, see http://www.horde.org/licenses/apache.
  *
- * @author Chuck Hagenbuch <chuck@horde.org>
+ * @author   Chuck Hagenbuch <chuck@horde.org>
+ * @category Horde
+ * @license  http://www.horde.org/licenses/apache ASL
+ * @package  Turba
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('turba');
 
 $listView = null;
 $vars = Horde_Variables::getDefaultVariables();
-$source = $vars->get('source');
-$original_source = $vars->get('original_source');
-$key = $vars->get('key');
-$groupedit = $vars->get('actionID') == 'groupedit';
-$objectkeys = $vars->get('objectkeys');
-$url = new Horde_Url(Horde_Util::getFormData('url', Horde::url($prefs->getValue('initial_page'), true)));
+$source = $vars->source;
+$key = $vars->key;
+$groupedit = ($vars->actionID == 'groupedit');
+$url = new Horde_Url($vars->get('url', Horde::url($prefs->getValue('initial_page'), true)));
 
 /* Edit the first of a list of contacts? */
 if ($groupedit && (!$key || $key == '**search')) {
-    if (!count($objectkeys)) {
+    if (!count($vars->objectkeys)) {
         $notification->push(_("You must select at least one contact first."), 'horde.warning');
         $url->redirect();
     }
-    if ($key == '**search') {
-        $original_source = $key;
-    }
-    list($source, $key) = explode(':', $objectkeys[0], 2);
+
+    $original_source = ($key == '**search')
+        ? $key
+        : $vars->original_source;
+    list($source, $key) = explode(':', $vars->objectkeys[0], 2);
     if (empty($original_source)) {
         $original_source = $source;
     }
@@ -40,7 +42,7 @@ if ($groupedit && (!$key || $key == '**search')) {
     $vars->set('original_source', $original_source);
 }
 
-if ($source === null || !isset($cfgSources[$source])) {
+if (is_null($source) || !isset($cfgSources[$source])) {
     $notification->push(_("Not found"), 'horde.error');
     $url->redirect();
 }
@@ -67,29 +69,28 @@ if (!$contact->hasPermission(Horde_Perms::EDIT)) {
 }
 
 /* Create the edit form. */
-if ($groupedit) {
-    $form = new Turba_Form_EditContactGroup($vars, $contact);
-} else {
-    $form = new Turba_Form_EditContact($vars, $contact);
-}
+$form = $groupedit
+    ? new Turba_Form_EditContactGroup($vars, $contact)
+    : new Turba_Form_EditContact($vars, $contact);
 
 /* Execute() checks validation first. */
 try {
     $edited = $form->execute();
-    $url = Horde_Util::getFormData('url');
-    if (empty($url)) {
-        $url = $contact->url('Contact', true);
-    } else {
-        $url = new Horde_Url($url, true);
-    }
+    $url = isset($vars->url)
+        ? new Horde_Url($url, true)
+        : $contact->url('Contact', true);
     $url->unique()->redirect();
-} catch (Turba_Exception $e) {
-}
+} catch (Turba_Exception $e) {}
 
-
-$title = sprintf(_("Edit \"%s\""), $contact->getValue('name'));
-require $registry->get('templates', 'horde') . '/common-header.inc';
-require TURBA_TEMPLATES . '/menu.inc';
+$title = sprintf($contact->isGroup() ? _("Edit Group \"%s\"") : _("Edit \"%s\""), $contact->getValue('name'));
+Horde::startBuffer();
+$notification->notify(array('listeners' => 'status'));
 $form->setTitle($title);
 $form->renderActive(new Horde_Form_Renderer(), $vars, Horde::url('edit.php'), 'post');
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$formHtml = Horde::endBuffer();
+
+$page_output->header(array(
+    'title' => $title
+));
+echo $formHtml;
+$page_output->footer();

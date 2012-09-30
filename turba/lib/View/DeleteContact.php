@@ -24,10 +24,9 @@ class Turba_View_DeleteContact
 
     public function getTitle()
     {
-        if (!$this->contact) {
-            return _("Not Found");
-        }
-        return sprintf(_("Delete %s"), $this->contact->getValue('name'));
+        return $this->contact
+            ? sprintf($this->contact->isGroup() ? _("Delete Group \"%s\"") : _("Delete \"%s\""), $this->contact->getValue('name'))
+            : _("Not Found");
     }
 
     public function html($active = true)
@@ -58,7 +57,7 @@ class Turba_View_DeleteContact
         <input type="hidden" name="key" value="<?php echo htmlspecialchars($this->contact->getValue('__key')) ?>" />
         <div class="headerbox" style="padding: 8px">
          <p><?php echo _("Permanently delete this contact?") ?></p>
-         <input type="submit" class="button" name="delete" value="<?php echo _("Delete") ?>" />
+         <input type="submit" class="horde-delete" name="delete" value="<?php echo _("Delete") ?>" />
         </div>
         </form>
         </div>

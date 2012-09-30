@@ -10,7 +10,7 @@
  * @package Ansel
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('ansel');
 
 // Redirect to the gallery list if no action has been requested.
@@ -52,11 +52,10 @@ case 'empty':
     if ($galleryId) {
         try {
             $gallery = $GLOBALS['injector']->getInstance('Ansel_Storage')->getGallery($galleryId);
-            require $registry->get('templates', 'horde') . '/common-header.inc';
-            echo Horde::menu();
+            $page_output->header();
             $notification->notify(array('listeners' => 'status'));
             require ANSEL_TEMPLATES . '/gallery/delete_confirmation.inc';
-            require $registry->get('templates', 'horde') . '/common-footer.inc';
+            $page_output->footer();
             exit;
         } catch (Ansel_Exception $e) {
             $notification->push($gallery->getMessage(), 'horde.error');

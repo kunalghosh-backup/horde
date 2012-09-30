@@ -7,41 +7,46 @@
 
 var IMP_JS = {
 
-    imgs: {},
-
     keydownhandler: null,
-
-    menuFolderSubmit: function(clear)
-    {
-        var mf = $('menuform');
-
-        if ((!this.menufolder_load || clear) &&
-            $F(mf.down('SELECT[name="mailbox"]'))) {
-            this.menufolder_load = true;
-            mf.submit();
-        }
-    },
+    imgs: {},
 
     /**
      * Use DOM manipulation to un-block images.
      */
     unblockImages: function(e)
     {
-        var callback,
-            elt = e.element().up('.mimeStatusMessageTable').up(),
-            iframe = elt.up().next().down('.htmlMsgData'),
+        var a, callback,
+            elt = e.element(),
+            iframe = elt.up('.mimePartBase').down('.mimePartData IFRAME.htmlMsgData'),
             iframeid = iframe.readAttribute('id'),
             imgload = false,
             s = new Selector('[htmlimgblocked]'),
             s2 = new Selector('[htmlcssblocked]'),
-            s3 = new Selector('STYLE[type=text/x-imp-cssblocked]');
+            s3 = new Selector('STYLE[type="text/x-imp-cssblocked"]');
 
         e.stop();
 
-        elt.slideUp({
-            afterFinish: function() { elt.remove(); },
-            duration: 0.6
-        });
+        a = new Element('A')
+            .insert(IMP_JS.unblock_image_text)
+            .observe('click', function(e) {
+                var box = e.element().up('.mimeStatusMessageTable').up();
+
+                HordeCore.doAction('imageUnblockAdd', {
+                    mbox: elt.readAttribute('mailbox'),
+                    uid: elt.readAttribute('uid')
+                });
+
+                box.slideUp({
+                    afterFinish: function() { box.remove(); },
+                    duration: 0.6
+                });
+            });
+
+        e.element().up('TBODY').update(
+            new Element('TR').insert(
+                new Element('TD').insert(a)
+            )
+        );
 
         callback = this.imgOnload.bind(this, iframeid);
 
@@ -105,14 +110,10 @@ var IMP_JS = {
         d.close();
 
         if (this.keydownhandler) {
-            var responder = function(e) {
-                return this.keydownhandler(e);
-            }.bindAsEventListener(this)
-
             if (d.addEventListener) {
-                d.addEventListener('keydown', responder, false);
+                d.addEventListener('keydown', this.keydownhandler.bindAsEventListener(this), false);
             } else {
-                d.attachEvent('onkeydown', responder);
+                d.attachEvent('onkeydown', this.keydownhandler.bindAsEventListener(this));
             }
         }
 
@@ -140,11 +141,6 @@ var IMP_JS = {
                 // Finally, brute force if it still isn't working.
                 id.setStyle({ height: (lc.scrollHeight + 25) + 'px' });
             }
-            if (lc.style.setProperty) {
-                lc.style.setProperty('overflow-x', 'hidden', '');
-            } else {
-                lc.style['overflow-x'] = 'hidden';
-            }
         }
     },
 
@@ -157,19 +153,6 @@ var IMP_JS = {
         }
         win.print();
         win.close();
-    },
-
-    onDomLoad: function()
-    {
-        // If menu is present, attach event handlers to folder switcher.
-        var tmp = $('openfoldericon');
-        if (tmp) {
-            // Observe actual element since IE does not bubble change events.
-            $('menu').down('[name=mailbox]').observe('change', this.menuFolderSubmit.bind(this));
-            tmp.down().observe('click', this.menuFolderSubmit.bind(this, true));
-        }
     }
 
 };
-
-document.observe('dom:loaded', IMP_JS.onDomLoad.bind(IMP_JS));

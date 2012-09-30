@@ -16,17 +16,17 @@
   <email>jan@horde.org</email>
   <active>yes</active>
  </lead>
- <date>2011-12-13</date>
- <time>12:26:58</time>
+ <date>2012-08-29</date>
+ <time>16:06:45</time>
  <version>
-  <release>1.0.6</release>
-  <api>1.0.0</api>
+  <release>2.0.0beta2</release>
+  <api>2.0.0beta1</api>
  </version>
  <stability>
-  <release>stable</release>
-  <api>stable</api>
+  <release>beta</release>
+  <api>beta</api>
  </stability>
- <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+ <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
  <notes>
 * 
  </notes>
@@ -70,6 +70,12 @@
       <file name="timeobjects.po" role="horde" />
      </dir> <!-- /locale/fi/LC_MESSAGES -->
     </dir> <!-- /locale/fi -->
+    <dir name="hu">
+     <dir name="LC_MESSAGES">
+      <file name="timeobjects.mo" role="horde" />
+      <file name="timeobjects.po" role="horde" />
+     </dir> <!-- /locale/hu/LC_MESSAGES -->
+    </dir> <!-- /locale/hu -->
     <dir name="ja">
      <dir name="LC_MESSAGES">
       <file name="timeobjects.mo" role="horde" />
@@ -88,6 +94,12 @@
       <file name="timeobjects.po" role="horde" />
      </dir> <!-- /locale/nl/LC_MESSAGES -->
     </dir> <!-- /locale/nl -->
+    <dir name="sv">
+     <dir name="LC_MESSAGES">
+      <file name="timeobjects.mo" role="horde" />
+      <file name="timeobjects.po" role="horde" />
+     </dir> <!-- /locale/sv/LC_MESSAGES -->
+    </dir> <!-- /locale/sv -->
     <file name=".htaccess" role="horde" />
     <file name="timeobjects.pot" role="horde" />
    </dir> <!-- /locale -->
@@ -96,7 +108,7 @@
  <dependencies>
   <required>
    <php>
-    <min>5.2.0</min>
+    <min>5.3.0</min>
    </php>
    <pearinstaller>
     <min>1.7.0</min>
@@ -104,37 +116,37 @@
    <package>
     <name>Horde_Core</name>
     <channel>pear.horde.org</channel>
-    <min>1.0.0</min>
-    <max>2.0.0</max>
-    <exclude>2.0.0</exclude>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
    <package>
     <name>Horde_Date</name>
     <channel>pear.horde.org</channel>
-    <min>1.0.0</min>
-    <max>2.0.0</max>
-    <exclude>2.0.0</exclude>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
    <package>
     <name>Horde_Exception</name>
     <channel>pear.horde.org</channel>
-    <min>1.0.0</min>
-    <max>2.0.0</max>
-    <exclude>2.0.0</exclude>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
    <package>
     <name>Horde_Url</name>
     <channel>pear.horde.org</channel>
-    <min>1.0.0</min>
-    <max>2.0.0</max>
-    <exclude>2.0.0</exclude>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
    <package>
     <name>Horde_Util</name>
     <channel>pear.horde.org</channel>
-    <min>1.0.0</min>
-    <max>2.0.0</max>
-    <exclude>2.0.0</exclude>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
    <extension>
     <name>gettext</name>
@@ -144,16 +156,16 @@
    <package>
     <name>Horde_Service_Facebook</name>
     <channel>pear.horde.org</channel>
-    <min>1.0.0</min>
-    <max>2.0.0</max>
-    <exclude>2.0.0</exclude>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
    <package>
     <name>Horde_Service_Weather</name>
     <channel>pear.horde.org</channel>
-    <min>1.0.0alpha1</min>
-    <max>2.0.0</max>
-    <exclude>2.0.0</exclude>
+    <min>2.0.0beta1</min>
+    <max>3.0.0alpha1</max>
+    <exclude>3.0.0alpha1</exclude>
    </package>
   </optional>
  </dependencies>
@@ -178,12 +190,16 @@
    <install as="timeobjects/locale/et/LC_MESSAGES/timeobjects.po" name="locale/et/LC_MESSAGES/timeobjects.po" />
    <install as="timeobjects/locale/fi/LC_MESSAGES/timeobjects.mo" name="locale/fi/LC_MESSAGES/timeobjects.mo" />
    <install as="timeobjects/locale/fi/LC_MESSAGES/timeobjects.po" name="locale/fi/LC_MESSAGES/timeobjects.po" />
+   <install as="timeobjects/locale/hu/LC_MESSAGES/timeobjects.mo" name="locale/hu/LC_MESSAGES/timeobjects.mo" />
+   <install as="timeobjects/locale/hu/LC_MESSAGES/timeobjects.po" name="locale/hu/LC_MESSAGES/timeobjects.po" />
    <install as="timeobjects/locale/ja/LC_MESSAGES/timeobjects.mo" name="locale/ja/LC_MESSAGES/timeobjects.mo" />
    <install as="timeobjects/locale/ja/LC_MESSAGES/timeobjects.po" name="locale/ja/LC_MESSAGES/timeobjects.po" />
    <install as="timeobjects/locale/lv/LC_MESSAGES/timeobjects.mo" name="locale/lv/LC_MESSAGES/timeobjects.mo" />
    <install as="timeobjects/locale/lv/LC_MESSAGES/timeobjects.po" name="locale/lv/LC_MESSAGES/timeobjects.po" />
    <install as="timeobjects/locale/nl/LC_MESSAGES/timeobjects.mo" name="locale/nl/LC_MESSAGES/timeobjects.mo" />
    <install as="timeobjects/locale/nl/LC_MESSAGES/timeobjects.po" name="locale/nl/LC_MESSAGES/timeobjects.po" />
+   <install as="timeobjects/locale/sv/LC_MESSAGES/timeobjects.mo" name="locale/sv/LC_MESSAGES/timeobjects.mo" />
+   <install as="timeobjects/locale/sv/LC_MESSAGES/timeobjects.po" name="locale/sv/LC_MESSAGES/timeobjects.po" />
   </filelist>
  </phprelease>
  <changelog>
@@ -197,7 +213,7 @@
     <api>beta</api>
    </stability>
    <date>2011-03-16</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * First beta release for Horde 4.
    </notes>
@@ -212,7 +228,7 @@
     <api>beta</api>
    </stability>
    <date>2011-03-23</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * First release candidate for Horde 4.
    </notes>
@@ -227,7 +243,7 @@
     <api>beta</api>
    </stability>
    <date>2011-03-30</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * Second release candidate for Horde 4.
    </notes>
@@ -242,7 +258,7 @@
     <api>stable</api>
    </stability>
    <date>2011-04-06</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * First stable release for Horde 4.
    </notes>
@@ -255,7 +271,7 @@
     <release>stable</release>
     <api>stable</api></stability>
    <date>2011-05-09</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * [jan] Fix installation paths.
    </notes>
@@ -268,7 +284,7 @@
     <release>stable</release>
     <api>stable</api></stability>
    <date>2011-08-02</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * [jan] Export location, description, status, privacy, and URL of Facebook events.
 * [jan] Fix timezone conversion of Facebook events (Bug #10341).
@@ -282,7 +298,7 @@
     <release>stable</release>
     <api>stable</api></stability>
    <date>2011-11-22</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * [mjr] Remove support for the now non-existent weatherdotcom API.
 * [mjr] Add support for Horde_Service_Weather.
@@ -298,7 +314,7 @@
     <release>stable</release>
     <api>stable</api></stability>
    <date>2011-11-23</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * [jan] Fix retrieving driver list if Horde_Service_Weather is not installed.
    </notes>
@@ -311,7 +327,7 @@
     <release>stable</release>
     <api>stable</api></stability>
    <date>2011-12-13</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * [jan] Add Dutch translation (Arjen de Korte &lt;arjen+horde@de-korte.org&gt;).
 * [jan] Update Japanese translation (Hiromi Kimura &lt;hiromi@tac.tsukuba.ac.jp&gt;).
@@ -324,8 +340,65 @@
    <stability>
     <release>stable</release>
     <api>stable</api></stability>
-   <date>2011-12-13</date>
-   <license uri="http://www.horde.org/licenses/bsd">BSD</license>
+   <date>2012-02-28</date>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
+   <notes>
+* [mjr] Always provide the longest forecast length available for weather forecast data.
+* [mjr] No longer attempt to create a Horde_Service_Weather provider if we do not have one configured.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>1.0.7</release>
+    <api>1.0.0</api></version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api></stability>
+   <date>2012-05-29</date>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
+   <notes>
+* [jan] Add Swedish translation (Jakob Alvermark &lt;jakob.alvermark@bsdlabs.com&gt;).
+* [jan] Add Hungarian translation (Zoltán Németh &lt;nemeth.zoltan@etit.hu&gt;).
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>1.0.8</release>
+    <api>1.0.0</api></version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api></stability>
+   <date>2012-05-29</date>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
+   <notes>
+*
+   </notes>
+  </release>
+  <release>
+   <date>2012-08-29</date>
+   <time>18:21:01</time>
+   <version>
+    <release>2.0.0beta1</release>
+    <api>2.0.0beta1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
+   <notes>
+* First beta release for Horde 5.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>2.0.0beta2</release>
+    <api>2.0.0beta1</api></version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api></stability>
+   <date>2012-08-29</date>
+   <license uri="http://www.horde.org/licenses/bsd">BSD-2-Clause</license>
    <notes>
 * 
    </notes>

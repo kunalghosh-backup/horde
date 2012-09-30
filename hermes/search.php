@@ -8,7 +8,7 @@
  * @author Jason M. Felice <jason.m.felice@gmail.com>
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('hermes');
 
 $vars = Horde_Variables::getDefaultVariables();
@@ -85,8 +85,9 @@ if (!($searchVars = $session->get('hermes', 'search_criteria'))) {
 }
 $form = new Hermes_Form_Search($searchVars);
 
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo Horde::menu();
+$page_output->header(array(
+    'title' => $title
+));
 $notification->notify(array('listeners' => 'status'));
 $form->renderActive(new Horde_Form_Renderer(), $searchVars, Horde::url('search.php'), 'post');
 echo '<br />';
@@ -116,4 +117,4 @@ echo '<br />';
 $exportForm = new Hermes_Form_Export($vars);
 $exportForm->renderActive(new Horde_Form_Renderer(), $vars, Horde::url('search.php'), 'post');
 
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

@@ -2,7 +2,7 @@
 /**
  * Prepare the test setup.
  */
-require_once dirname(__FILE__) . '/TestBase.php';
+require_once __DIR__ . '/TestBase.php';
 
 /**
  * @author     Jan Schneider <jan@horde.org>
@@ -22,7 +22,7 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
         $this->vcs = Horde_Vcs::factory(
             'Svn',
             array_merge(self::$conf,
-                        array('sourceroot' => 'file://' . dirname(__FILE__) . '/repos/svn')));
+                        array('sourceroot' => 'file://' . __DIR__ . '/repos/svn')));
     }
 
     public function testFactory()
@@ -85,11 +85,11 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
         $this->assertEquals('file1', $file->getFileName());
         $this->assertEquals('file1', $file->getSourcerootPath());
         $this->assertEquals(
-            'file:///home/jan/horde-git/framework/Vcs/test/Horde/Vcs/repos/svn/file1',
+            'file://' . __DIR__ . '/repos/svn/file1',
             $file->getPath());
-        $this->assertEquals('2', $file->getRevision());
+        $this->assertEquals('4', $file->getRevision());
         $this->assertEquals('1', $file->getPreviousRevision('2'));
-        $this->assertEquals(2, $file->revisionCount());
+        $this->assertEquals(3, $file->revisionCount());
         $this->assertEquals(array(), $file->getTags());
         $this->assertEquals(array(), $file->getBranches());
         $this->assertFalse($file->isDeleted());
@@ -100,7 +100,7 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
         $this->assertEquals('file1_1', $file->getFileName());
         $this->assertEquals('dir1/file1_1', $file->getSourcerootPath());
         $this->assertEquals(
-            'file:///home/jan/horde-git/framework/Vcs/test/Horde/Vcs/repos/svn/dir1/file1_1',
+            'file://' . __DIR__ . '/repos/svn/dir1/file1_1',
             $file->getPath());
         $this->assertEquals('1', $file->getRevision());
         $this->assertEquals(1, $file->revisionCount());
@@ -113,7 +113,7 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
         $this->assertEquals('deletedfile1', $file->getFileName());
         $this->assertEquals('deletedfile1', $file->getSourcerootPath());
         $this->assertEquals(
-            'file:///home/jan/horde-git/framework/Vcs/test/Horde/Vcs/repos/svn/deletedfile1',
+            'file://' . __DIR__ . '/repos/svn/deletedfile1',
             $file->getPath());
         /* FIXME
         $this->assertEquals('2', $file->getRevision());
@@ -133,7 +133,7 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
         $this->assertEquals('umläüte', $file->getFileName());
         $this->assertEquals('umläüte', $file->getSourcerootPath());
         $this->assertEquals(
-            'file:///home/jan/horde-git/framework/Vcs/test/Horde/Vcs/repos/svn/umläüte',
+            'file://' . __DIR__ . '/repos/svn/umläüte',
             $file->getPath());
         $this->assertEquals('3', $file->getRevision());
         $this->assertEquals(1, $file->revisionCount());
@@ -146,7 +146,7 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
     {
         $logs = $this->vcs->getFile('file1')->getLog();
         $this->assertInternalType('array', $logs);
-        $this->assertEquals(array('2', '1'), array_keys($logs));
+        $this->assertEquals(array('4', '2', '1'), array_keys($logs));
         $this->assertInstanceOf('Horde_Vcs_Log_Svn', $logs['2']);
 
         $log = $logs['2'];
@@ -199,6 +199,13 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
         $this->assertEquals(1, $log->getDeletedLines());
         */
 
+        $this->assertEquals(
+            'Multiline commit message.
+
+More message here
+and here.',
+            $logs['4']->getMessage());
+
         $logs = $this->vcs->getFile('umläüte')->getLog();
         $this->assertInternalType('array', $logs);
         $this->assertEquals(array('3'), array_keys($logs));
@@ -211,10 +218,13 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
             ->getFile('file1')
             ->getLastLog();
         $this->assertInstanceof('Horde_Vcs_QuickLog_Svn', $log);
-        $this->assertEquals('2', $log->getRevision());
-        $this->assertEquals(1322496080, $log->getDate());
+        $this->assertEquals('4', $log->getRevision());
+        $this->assertEquals(1332506387, $log->getDate());
         $this->assertEquals('jan', $log->getAuthor());
-        $this->assertEquals('Commit 2nd version.', $log->getMessage());
+        $this->assertEquals('Multiline commit message.
+
+More message here
+and here.', $log->getMessage());
     }
 
     public function testPatchset()
@@ -223,8 +233,8 @@ class Horde_Vcs_SvnTest extends Horde_Vcs_TestBase
         $this->assertInstanceOf('Horde_Vcs_Patchset_Svn', $ps);
         $sets = $ps->getPatchsets();
         $this->assertInternalType('array', $sets);
-        $this->assertEquals(2, count($sets));
-        $this->assertEquals(array(2, 1), array_keys($sets));
+        $this->assertEquals(3, count($sets));
+        $this->assertEquals(array(4, 2, 1), array_keys($sets));
         $this->assertEquals(1, $sets[1]['revision']);
         $this->assertEquals(1322254316, $sets[1]['date']);
         $this->assertEquals('jan', $sets[1]['author']);

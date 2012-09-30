@@ -2,7 +2,7 @@
 /**
  * Require our basic test case definition
  */
-require_once dirname(__FILE__) . '/Autoload.php';
+require_once __DIR__ . '/Autoload.php';
 
 /**
  * @author     Jan Schneider <jan@horde.org>
@@ -468,6 +468,14 @@ EOT
             "<html>",
             Horde_String::convertCharset("<html>", 'UTF-8', 'Windows-1258')
         );
+    }
+
+    public function testLongStringsBreakUtf8DetectionRegex()
+    {
+        $string = str_repeat('1 A B', 10000);
+
+        /* Failing test will cause a PHP segfault here. */
+        Horde_String::validUtf8($string);
     }
 
 }

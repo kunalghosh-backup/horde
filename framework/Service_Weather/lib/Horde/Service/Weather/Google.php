@@ -53,7 +53,7 @@ class Horde_Service_Weather_Google extends Horde_Service_Weather_Base
         'chance_of_rain' => '11.png',
         'chance_of_snow' => '14.png',
         'chance_of_storm' => '3.png',
-        'chance_or_tstorm' => '3.png',
+        'chance_of_tstorm' => '3.png',
         'clear' => '32.png',
         'cloudy' => '26.png',
         'flurries' => '14.png',
@@ -67,7 +67,7 @@ class Horde_Service_Weather_Google extends Horde_Service_Weather_Base
         'rain' => '12.png',
         'snow' => '16.png',
         'sunny' => '32.png',
-        'tstorms' => '3.png',
+        'thunderstorm' => '3.png',
         'storm' => '12.png',
         'mist' => '29.png',
         'icy' => '7.png',
@@ -244,6 +244,7 @@ class Horde_Service_Weather_Google extends Horde_Service_Weather_Base
     /**
      *
      * @return SimplexmlElement
+     * @throws Horde_Service_Weather_Exception
      */
     protected function _makeRequest($url)
     {
@@ -265,7 +266,11 @@ class Horde_Service_Weather_Google extends Horde_Service_Weather_Base
                $this->_cache->set($cachekey, $results);
             }
         }
-        return new SimplexmlElement($results);
+        try {
+            return new SimplexmlElement($results);
+        } catch (Exception $e) {
+            throw new Horde_Service_Weather_Exception($e);
+        }
     }
 
 }

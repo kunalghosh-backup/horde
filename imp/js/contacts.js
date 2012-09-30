@@ -1,13 +1,11 @@
 /**
- * Provides the javascript for the contacts.php script (standard view).
+ * Provides the javascript for the contacts.php script.
  *
  * See the enclosed file COPYING for license information (GPL). If you
  * did not receive this file, see http://www.horde.org/licenses/gpl.
  */
 
 var ImpContacts = {
-    // The following variables are defined in contacts.php:
-    //   formfield, formname, to_only
 
     _passAddresses: function()
     {
@@ -43,7 +41,7 @@ var ImpContacts = {
         var d, l, option, s = $('search_results');
 
         if (!$F(s).size()) {
-            alert(IMP.text.contacts_select);
+            alert(this.text.select);
         } else {
             d = $('selected_addresses');
             l = $A(d).size();
@@ -63,49 +61,24 @@ var ImpContacts = {
     updateMessage: function()
     {
         if (!parent.opener) {
-            alert(IMP.text.contacts_closed);
-            window.close();
-            return;
-        }
-
-        if (!parent.opener.document[this.formname]) {
-            alert(IMP.text.contacts_called);
+            alert(this.text.closed);
             window.close();
             return;
         }
 
         $('selected_addresses').childElements().each(function(s) {
-            var address = s.value, f, field = null, pos, v;
-            pos = address.indexOf(':');
-            f = address.substring(0, pos);
-            address = address.substring(pos + 2, address.length)
+            var pos,
+                address = s.value;
 
-            if (this.formfield) {
-                field = parent.opener.document[this.formname][this.formfield];
-            } else if (f == 'to' ||
-                      (!this.to_only && (f == 'cc' || f == 'bcc'))) {
-                field = parent.opener.document[this.formname][f];
-            }
+            if (!address.empty()) {
+                pos = address.indexOf(':');
 
-            if (!field) {
-                return;
+                $(parent.opener.document).fire('ImpContacts:update', {
+                    field: address.substring(0, pos),
+                    value: address.substring(pos + 2, address.length)
+                });
             }
-
-            // Always delimit with commas.
-            if (field.value.length) {
-                v = field.value.replace(/, +/g, ',').split(',').findAll(function(s) { return s; });
-                field.value = v.join(', ');
-                if (field.value.lastIndexOf(';') != field.value.length - 1) {
-                    field.value += ',';
-                }
-                field.value += ' ' + address;
-            } else {
-                field.value = address;
-            }
-            if (address.lastIndexOf(';') != address.length - 1) {
-                field.value += ', ';
-            }
-        }, this);
+        });
 
         window.close();
     },
@@ -124,58 +97,49 @@ var ImpContacts = {
         if ($('search').present()) {
             $('btn_clear').show();
         }
+
+        HordeCore.initHandler('click');
+        HordeCore.initHandler('dblclick');
         $('contacts').observe('submit', this._passAddresses.bind(this));
-        document.observe('click', this._clickHandler.bindAsEventListener(this));
-        document.observe('dblclick', this._dblclickHandler.bindAsEventListener(this));
     },
 
-    _clickHandler: function(e)
+    clickHandler: function(e)
     {
-        if (e.isRightClick()) {
-            return;
-        }
+        switch (e.element().readAttribute('id')) {
+        case 'btn_add_bcc':
+            this.addAddress('bcc');
+            break;
 
-        var elt = e.element(), id;
+        case 'btn_add_cc':
+            this.addAddress('cc');
+            break;
 
-        while (Object.isElement(elt)) {
-            id = elt.readAttribute('id');
+        case 'btn_add_to':
+            this.addAddress('to');
+            break;
 
-            switch (id) {
-            case 'btn_clear':
-                $('search').clear();
-                break;
+        case 'btn_cancel':
+            window.close();
+            e.memo.hordecore_stop = true;
+            break;
 
-            case 'btn_add_to':
-            case 'btn_add_cc':
-            case 'btn_add_bcc':
-                this.addAddress(id.substring(8));
-                break;
+        case 'btn_clear':
+            $('search').clear();
+            break;
 
-            case 'btn_update':
-                this.updateMessage();
-                break;
+        case 'btn_delete':
+            this.removeAddress();
+            break;
 
-            case 'btn_delete':
-                this.removeAddress();
-                break;
-
-            case 'btn_cancel':
-                window.close();
-                break;
-            }
-
-            elt = elt.up();
+        case 'btn_update':
+            this.updateMessage();
+            break;
         }
     },
 
-    _dblclickHandler: function(e)
+    dblclickHandler: function(e)
     {
-        var elt = e.element();
-        if (!elt.match('SELECT')) {
-            elt = elt.up('SELECT');
-        }
-
-        switch (elt.readAttribute('id')) {
+        switch (e.element().readAttribute('id')) {
         case 'search_results':
             this.addAddress('to');
             break;
@@ -189,3 +153,5 @@ var ImpContacts = {
 };
 
 document.observe('dom:loaded', ImpContacts.onDomLoad.bind(ImpContacts));
+document.observe('HordeCore:click', ImpContacts.clickHandler.bindAsEventListener(ImpContacts));
+document.observe('HordeCore:dblclick', ImpContacts.dblclickHandler.bindAsEventListener(ImpContacts));

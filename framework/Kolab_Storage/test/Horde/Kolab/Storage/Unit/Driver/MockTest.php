@@ -15,7 +15,7 @@
 /**
  * Prepare the test setup.
  */
-require_once dirname(__FILE__) . '/../../Autoload.php';
+require_once __DIR__ . '/../../Autoload.php';
 
 /**
  * Test the Kolab mock driver.
@@ -497,22 +497,6 @@ extends Horde_Kolab_Storage_TestCase
             array(4),
             $mock->getUids('INBOX/WithDeleted')
         );
-    }
-
-    /**
-     * @expectedException Horde_Kolab_Storage_Exception
-     */
-    public function testGetParser()
-    {
-        $this->getNullMock()->getParser();
-    }
-
-    public function testSetParser()
-    {
-        $mock = $this->getNullMock();
-        $parser = $this->getMock('Horde_Kolab_Storage_Data_Parser');
-        $mock->setParser($parser);
-        $this->assertSame($parser, $mock->getParser());
     }
 
     public function testGetStamp()

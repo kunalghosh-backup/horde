@@ -13,7 +13,7 @@
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package  Util
  */
-class Horde_Variables implements Countable, Iterator
+class Horde_Variables implements Countable, Iterator, ArrayAccess
 {
     /**
      * The list of expected variables.
@@ -112,6 +112,16 @@ class Horde_Variables implements Countable, Iterator
     }
 
     /**
+     * Implements isset() for ArrayAccess interface.
+     *
+     * @see __isset()
+     */
+    public function offsetExists($field)
+    {
+        return $this->__isset($field);
+    }
+
+    /**
      * Returns the value of a given form variable.
      *
      * @param string $varname  The form variable name.
@@ -137,6 +147,16 @@ class Horde_Variables implements Countable, Iterator
     {
         $this->_getExists($this->_vars, $varname, $value);
         return $value;
+    }
+
+    /**
+     * Implements getter for ArrayAccess interface.
+     *
+     * @see __get()
+     */
+    public function offsetGet($field)
+    {
+        return $this->__get($field);
     }
 
     /**
@@ -195,6 +215,16 @@ class Horde_Variables implements Countable, Iterator
     }
 
     /**
+     * Implements setter for ArrayAccess interface.
+     *
+     * @see __set()
+     */
+    public function offsetSet($field, $value)
+    {
+        $this->__set($field, $value);
+    }
+
+    /**
      * Deletes a given form variable.
      *
      * @see __unset()
@@ -232,6 +262,16 @@ class Horde_Variables implements Countable, Iterator
     }
 
     /**
+     * Implements unset() for ArrayAccess interface.
+     *
+     * @see __unset()
+     */
+    public function offsetUnset($field)
+    {
+        $this->__unset($field);
+    }
+
+    /**
      * Merges a list of variables into the current form variable list.
      *
      * @param array $vars  Form variables.
@@ -263,8 +303,6 @@ class Horde_Variables implements Countable, Iterator
 
     /**
      * Filters a form value so that it can be used in HTML output.
-     *
-     * @since Horde_Util 1.2.0
      *
      * @param string $varname  The form variable name.
      *

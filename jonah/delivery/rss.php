@@ -7,7 +7,7 @@
  *
  * @author Chuck Hagenbuch <chuck@horde.org>
  */
-require_once dirname(__FILE__) . '/../lib/Application.php';
+require_once __DIR__ . '/../lib/Application.php';
 $jonah = Horde_Registry::appInit('jonah', array(
     'authentication' => 'none',
     'session_control' => 'readonly'
@@ -72,8 +72,8 @@ if (!empty($criteria['tag_id'])) {
 $template->set('channel_desc', htmlspecialchars($channel['channel_desc']));
 $template->set('channel_updated', htmlspecialchars(date('r', $channel['channel_updated'])));
 $template->set('channel_official', htmlspecialchars($channel['channel_official']));
-$template->set('channel_rss', htmlspecialchars(Horde_Util::addParameter(Horde::url('delivery/rss.php', true, -1), array('type' => 'rss', 'channel_id' => $channel['channel_id']))));
-$template->set('channel_rss2', htmlspecialchars(Horde_Util::addParameter(Horde::url('delivery/rss.php', true, -1), array('type' => 'rss2', 'channel_id' => $channel['channel_id']))));
+$template->set('channel_rss', htmlspecialchars(Horde::url('delivery/rss.php', true, -1)->add(array('type' => 'rss', 'channel_id' => $channel['channel_id']))));
+$template->set('channel_rss2', htmlspecialchars(Horde::url('delivery/rss.php', true, -1)->add(array('type' => 'rss2', 'channel_id' => $channel['channel_id']))));
 foreach ($stories as &$story) {
     $story['title'] = htmlspecialchars($story['title']);
     $story['description'] = htmlspecialchars($story['description']);

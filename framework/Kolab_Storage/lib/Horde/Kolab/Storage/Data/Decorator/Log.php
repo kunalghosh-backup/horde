@@ -50,7 +50,7 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
      * @param Horde_Kolab_Storage_Data $data   The original data handler.
      * @param mixed                    $logger The log handler. This instance
      *                                         must provide the debug() and 
-     *                                         info() methods.
+     *                                         debug() methods.
      */
     public function __construct(Horde_Kolab_Storage_Data $data,
                                 $logger)
@@ -149,11 +149,11 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
      */
     public function create(&$object, $raw = false)
     {
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf('Creating new data object in %s.', $this->_data->getPath())
         );
         $result = $this->_data->create($object, $raw);
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Created data object %s in %s [backend: %s].',
                 $object['uid'],
@@ -178,7 +178,7 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
      */
     public function modify($object, $raw = false)
     {
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Modifying data object %s in %s.',
                 $object['uid'],
@@ -186,7 +186,7 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
             )
         );
         $this->_data->modify($object, $raw);
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Modified data object %s in %s.',
                 $object['uid'],
@@ -248,24 +248,6 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
             sprintf(
                 'Backend id for object %s is %s in %s.',
                 $object_id,
-                $result,
-                $this->_data->getPath()
-            )
-        );
-        return $result;
-    }
-
-    /**
-     * Generate a unique object ID.
-     *
-     * @return string  The unique ID.
-     */
-    public function generateUid()
-    {
-        $result = $this->_data->generateUid();
-        $this->_logger->debug(
-            sprintf(
-                'Generated new uid %s for %s.',
                 $result,
                 $this->_data->getPath()
             )
@@ -444,7 +426,7 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
      */
     public function move($object_id, $new_folder)
     {
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Moving data object %s in %s to %s.',
                 $object_id,
@@ -452,8 +434,8 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
                 $new_folder
             )
         );
-        $this->_data->move($object_ids, $new_folder);
-        $this->_logger->info(
+        $this->_data->move($object_id, $new_folder);
+        $this->_logger->debug(
             sprintf(
                 'Moved data object %s in %s to %s.',
                 $object_id,
@@ -477,7 +459,7 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
         } else {
             $ids = $object_ids;
         }
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Deleting data object(s) %s in %s.',
                 $ids,
@@ -485,7 +467,7 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
             )
         );
         $this->_data->delete($object_ids);
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Deleted data object(s) %s in %s.',
                 $ids,
@@ -501,14 +483,14 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
      */
     public function deleteAll()
     {
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Deleting all data objects in %s.',
                 $this->_data->getPath()
             )
         );
         $this->_data->deleteAll();
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Deleted all data objects in %s.',
                 $this->_data->getPath()
@@ -532,7 +514,7 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
         } else {
             $ids = $uids;
         }
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Deleting backend data object(s) %s in %s.',
                 $ids,
@@ -540,7 +522,7 @@ implements Horde_Kolab_Storage_Data, Horde_Kolab_Storage_Data_Query
             )
         );
         $this->_data->deleteBackendIds($uids);
-        $this->_logger->info(
+        $this->_logger->debug(
             sprintf(
                 'Deleted backend data object(s) %s in %s.',
                 $ids,

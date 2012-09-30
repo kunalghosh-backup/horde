@@ -8,7 +8,7 @@
  * @package Mnemo
  */
 
-@define('MNEMO_BASE', dirname(dirname(__FILE__)));
+@define('MNEMO_BASE', dirname(__DIR__));
 require_once MNEMO_BASE . '/lib/Application.php';
 Horde_Registry::appInit('mnemo');
 
@@ -35,18 +35,14 @@ if (count($search_results) == 1) {
         ->redirect();
 }
 
-$title = _("Search Results");
 $memos = $search_results;
 
-if ($prefs->getValue('show_panel')) {
-    $bodyClass = 'rightPanel';
-}
+$page_output->addScriptFile('tables.js', 'horde');
+$page_output->addScriptFile('quickfinder.js', 'horde');
 
-Horde::addScriptFile('tables.js', 'horde', true);
-Horde::addScriptFile('quickfinder.js', 'horde', true);
-
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo Horde::menu();
+$page_output->header(array(
+    'title' => _("Search Results")
+));
 require MNEMO_TEMPLATES . '/list/header.inc';
 
 if (count($memos)) {
@@ -61,14 +57,13 @@ if (count($memos)) {
     require MNEMO_TEMPLATES . '/list/memo_headers.inc';
 
     foreach ($memos as $memo_id => $memo) {
-        $viewurl = Horde_Util::addParameter(
-            'view.php',
+        $viewurl = Horde::url('view.php')->add(
             array('memo' => $memo['memo_id'],
                   'memolist' => $memo['memolist_id']));
 
-        $memourl = Horde_Util::addParameter(
-            'memo.php', array('memo' => $memo['memo_id'],
-                              'memolist' => $memo['memolist_id']));
+        $memourl = Horde::url('memo.php')->add(
+            array('memo' => $memo['memo_id'],
+                  'memolist' => $memo['memolist_id']));
         try {
             $share = $GLOBALS['mnemo_shares']->getShare($memo['memolist_id']);
             $notepad = $share->get('name');
@@ -84,5 +79,4 @@ if (count($memos)) {
     require MNEMO_TEMPLATES . '/list/empty.inc';
 }
 
-require MNEMO_TEMPLATES . '/panel.inc';
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

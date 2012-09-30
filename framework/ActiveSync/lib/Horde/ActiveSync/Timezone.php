@@ -1,5 +1,17 @@
 <?php
 /**
+ * Horde_ActiveSync_Timezone::
+ *
+ * @license   http://www.horde.org/licenses/gpl GPLv2
+ *            NOTE: According to sec. 8 of the GENERAL PUBLIC LICENSE (GPL),
+ *            Version 2, the distribution of the Horde_ActiveSync module in or
+ *            to the United States of America is excluded from the scope of this
+ *            license.
+ * @copyright 2009-2012 Horde LLC (http://www.horde.org)
+ * @author    Michael J Rubinsky <mrubinsk@horde.org>
+ * @package   ActiveSync
+ */
+/**
  * Utility functions for dealing with Microsoft ActiveSync's Timezone format.
  *
  * Copyright 2009-2012 Horde LLC (http://www.horde.org/)
@@ -10,10 +22,14 @@
  * Code dealing with searching for a timezone identifier from an AS timezone
  * blob inspired by code in the Tine20 Project (http://tine20.org).
  *
- * @author   Michael J. Rubinsky <mrubinsk@horde.org>
- *
- * @category Horde
- * @package  ActiveSync
+ * @license   http://www.horde.org/licenses/gpl GPLv2
+ *            NOTE: According to sec. 8 of the GENERAL PUBLIC LICENSE (GPL),
+ *            Version 2, the distribution of the Horde_ActiveSync module in or
+ *            to the United States of America is excluded from the scope of this
+ *            license.
+ * @copyright 2009-2012 Horde LLC (http://www.horde.org)
+ * @author    Michael J Rubinsky <mrubinsk@horde.org>
+ * @package   ActiveSync
  */
 class Horde_ActiveSync_Timezone
 {
@@ -79,7 +95,7 @@ class Horde_ActiveSync_Timezone
      * @return string  A base64_encoded ActiveSync Timezone structure suitable
      *                 for transmitting via wbxml.
      */
-    static public function getSyncTZFromOffsets($offsets)
+    static public function getSyncTZFromOffsets(array $offsets)
     {
         $packed = pack('la64vvvvvvvvla64vvvvvvvvl',
                 $offsets['bias'], '', 0, $offsets['stdmonth'], $offsets['stdday'], $offsets['stdweek'], $offsets['stdhour'], $offsets['stdminute'], $offsets['stdsecond'], $offsets['stdmillis'],
@@ -94,8 +110,10 @@ class Horde_ActiveSync_Timezone
      *
      * @param Horde_Date $date  A date object representing the date to base the
      *                          the tz data on.
+     *
+     * @return array  An offset hash.
      */
-    static public function getOffsetsFromDate($date)
+    static public function getOffsetsFromDate(Horde_Date $date)
     {
         $offsets = array(
 	        'bias' => 0,
@@ -144,19 +162,17 @@ class Horde_ActiveSync_Timezone
      * @param Horde_Date $date        The date to start from. Really only the
      *                                year we are interested in is needed.
      *
-     * @return array containing the the STD and DST transitions
+     * @return array  An array containing the the STD and DST transitions
      */
-    static protected function _getTransitions(DateTimeZone $timezone, $date)
+    static protected function _getTransitions(DateTimeZone $timezone, Horde_Date $date)
     {
-        $std = $dst = null;
-        if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
-            $transitions = $timezone->getTransitions(
-                mktime(0, 0, 0, 12, 1, $date->year - 1),
-                mktime(24, 0, 0, 12, 31, $date->year)
-            );
-        } else {
-            $transitions = $timezone->getTransitions();
-        }
+
+        $std = $dst = array();
+        $transitions = $timezone->getTransitions(
+            mktime(0, 0, 0, 12, 1, $date->year - 1),
+            mktime(24, 0, 0, 12, 31, $date->year)
+        );
+
         foreach ($transitions as $i => $transition) {
             try {
                $d = new Horde_Date($transition['time']);
@@ -191,7 +207,7 @@ class Horde_ActiveSync_Timezone
      *
 	 * @return array  A populated offset hash
 	 */
-	static protected function _generateOffsetsForTransition($offsets, $transition, $type)
+	static protected function _generateOffsetsForTransition(array $offsets, array $transition, $type)
 	{
         // We can't use Horde_Date directly here, since it is unable to
         // properly convert to UTC from local ON the exact hour of a std -> dst
@@ -218,11 +234,12 @@ class Horde_ActiveSync_Timezone
     /**
      * Attempt to guess the timezone identifier from the $offsets array.
      *
-     * @param array $offsets            The offsets to check.
+     * @param array|string $offsets     The timezone to check. Either an array
+     *                                  of offsets or an activesynz tz blob.
      * @param string $expectedTimezone  The expected timezone. If not empty, and
      *                                  present in the results, will return.
      *
-     * @return array
+     * @return string  The timezone identifier
      */
     public function getTimezone($offsets, $expectedTimezone = null)
     {
@@ -238,11 +255,11 @@ class Horde_ActiveSync_Timezone
      * Get the list of timezone identifiers that match the given offsets, having
      * a preference for $expectedTimezone if it's present in the results.
      *
-     * @param mixed $offsets            Either an offset array, or a AS timezone
+     * @param array|string $offsets     Either an offset array, or a AS timezone
      *                                  structure.
      * @param string $expectedTimezone  The expected timezone.
      *
-     * @return array An array of timezone identifiers
+     * @return array  An array of timezone identifiers
      */
     public function getListOfTimezones($offsets, $expectedTimezone = null)
     {
@@ -277,9 +294,8 @@ class Horde_ActiveSync_Timezone
      * back to current date.
      *
      * @param array $offsets  Offsets may be avaluated for a given start year
-     * @return void
      */
-    protected function _setDefaultStartDate($offsets = null)
+    protected function _setDefaultStartDate(array $offsets = null)
     {
         if (!empty($this->_startDate)) {
             return;
@@ -288,7 +304,9 @@ class Horde_ActiveSync_Timezone
         if (!empty($offsets['stdyear'])) {
             $this->_startDate = new Horde_Date($offsets['stdyear'] . '-01-01');
         } else {
-            $this->_startDate = new Horde_Date(time());
+            $start = new Horde_Date(time());
+            $start->year--;
+            $this->_startDate = $start;
         }
     }
 
@@ -299,9 +317,10 @@ class Horde_ActiveSync_Timezone
      * @param DateTimeZone $timezone  The timezone to check.
      * @param array $offsets          The offsets to check.
      *
-     * @return mixed  array of transition data or false if timezone does not match offset.
+     * @return array|boolean  An array of transition data or false if timezone
+     *                        does not match offset.
      */
-    protected function _checkTimezone(DateTimeZone $timezone, $offsets)
+    protected function _checkTimezone(DateTimeZone $timezone, array $offsets)
     {
         list($std, $dst) = $this->_getTransitions($timezone, $this->_startDate);
         if ($this->_checkTransition($std, $dst, $offsets)) {
@@ -315,13 +334,13 @@ class Horde_ActiveSync_Timezone
      * Check if the given standardTransition and daylightTransition match to the
      * given offsets.
      *
-     * @param array $std  The Standard transition date.
-     * @param array $dst  The DST transition date.
-     * @param array $offsets             The offsets to check.
+     * @param array $std      The Standard transition date.
+     * @param array $dst      The DST transition date.
+     * @param array $offsets  The offsets to check.
      *
      * @return boolean
      */
-    protected function _checkTransition($std, $dst, $offsets)
+    protected function _checkTransition(array $std, array $dst, array $offsets)
     {
         if (empty($std) || empty($offsets)) {
             return false;
@@ -332,8 +351,9 @@ class Horde_ActiveSync_Timezone
         // check each condition in a single if statement and break the chain
         // when one condition is not met - for performance reasons
         if ($standardOffset == $std['offset']) {
-            if (empty($offsets['dstmonth']) && (empty($dst) || empty($dst['isdst']))) {
-                //No DST
+            if ((empty($offsets['dstmonth']) && (empty($dst) || empty($dst['isdst']))) ||
+                (empty($dst) && !empty($offsets['dstmonth']))) {
+                // Offset contains DST, but no dst to compare
                 return true;
             }
             $daylightOffset = ($offsets['bias'] + $offsets['dstbias']) * 60 * -1;

@@ -21,8 +21,8 @@ class IMP_Ui_Search
      * @param boolean $unsub  Include unsubcribed mailboxes?
      *
      * @return object  Object with the following properties:
-     *   - folder_list: (array) Mapping of mailbox name (key) to display
-     *                  string (values).
+     *   - mbox_list: (array) Mapping of mailbox name (key) to display
+     *                string (values).
      *   - tree: (IMP_Tree_Flist) Tree object.
      */
     public function getSearchMboxList($unsub = false)
@@ -34,25 +34,26 @@ class IMP_Ui_Search
         $imap_tree = $injector->getInstance('IMP_Imap_Tree');
         $imap_tree->setIteratorFilter($unsub ? IMP_Imap_Tree::FLIST_UNSUB : 0);
 
-        $t2 = $injector->createInstance('Horde_Template');
-        $t2->setOption('gettext', true);
-        $t2->set('allsearch', IMP_Mailbox::formTo(IMP_Search_Query::ALLSEARCH));
+        $view = new Horde_View(array(
+            'templatePath' => IMP_TEMPLATES . '/search'
+        ));
+        $view->allsearch = IMP_Mailbox::formTo(IMP_Search_Query::ALLSEARCH);
 
         $ob->tree = $imap_tree->createTree('imp_search', array(
             'render_params' => array(
                 'abbrev' => 0,
                 'container_select' => true,
-                'customhtml' => $t2->fetch(IMP_TEMPLATES . '/imp/search/search-all.html'),
-                'heading' => _("Add search folder:")
+                'customhtml' => $view->render('search-all'),
+                'heading' => _("Add search mailbox:")
             ),
             'render_type' => 'IMP_Tree_Flist'
         ));
 
-        $folder_list = array();
+        $mbox_list = array();
         foreach ($imap_tree as $val) {
-            $folder_list[$val->form_to] = $val->display;
+            $mbox_list[$val->form_to] = $val->display;
         }
-        $ob->folder_list = $folder_list;
+        $ob->mbox_list = $mbox_list;
 
         return $ob;
     }

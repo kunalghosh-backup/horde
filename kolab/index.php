@@ -10,12 +10,11 @@
  * @author Your Name <you@example.com>
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('kolab');
 
-$title = _("Overview");
-
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo Horde::menu();
+$page_output->header(array(
+    'title' => _("Overview")
+));
 $notification->notify(array('listeners' => 'status'));
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$page_output->footer();

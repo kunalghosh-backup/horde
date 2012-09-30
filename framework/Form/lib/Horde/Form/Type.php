@@ -429,6 +429,21 @@ class Horde_Form_Type_stringarray extends Horde_Form_Type_stringlist {
 
 class Horde_Form_Type_phone extends Horde_Form_Type {
 
+    /**
+     * The size of the input field.
+     *
+     * @var integer
+     */
+    var $_size;
+
+    /**
+     * @param integer $size  The size of the input field.
+     */
+    function init($size = 15)
+    {
+        $this->_size = $size;
+    }
+
     function isValid(&$var, &$vars, $value, &$message)
     {
         if (!strlen(trim($value))) {
@@ -444,12 +459,23 @@ class Horde_Form_Type_phone extends Horde_Form_Type {
         return true;
     }
 
+    function getSize()
+    {
+        return $this->_size;
+    }
+
     /**
      * Return info about field type.
      */
     function about()
     {
-        return array('name' => Horde_Form_Translation::t("Phone number"));
+        return array(
+            'name' => Horde_Form_Translation::t("Phone number"),
+            'params' => array(
+                'size'      => array('label' => Horde_Form_Translation::t("Size"),
+                                     'type'  => 'int'),
+            ),
+        );
     }
 
 }
@@ -1005,9 +1031,15 @@ class Horde_Form_Type_image extends Horde_Form_Type {
         }
     }
 
+    /**
+     * @param Horde_Form_Variable $var  The Form field object to check
+     * @param Horde_Variables $vars     The form state to check this field for
+     * @param array $value              The field value array - should contain a key ['hash'] which holds the key for the image on temp storage
+     * @param something  $message       Not clear what this field does
+     */
+
     function isValid(&$var, &$vars, $value, &$message)
     {
-
         if ($vars->get('remove_' . $var->getVarName())) {
             return true;
         }
@@ -1097,8 +1129,11 @@ class Horde_Form_Type_image extends Horde_Form_Type {
 
     /**
      * Gets the upload and sets up the upload data array. Either
-     * fetches an upload done with this submit or retries stored
+     * fetches an upload done with this submit or retrieves stored
      * upload info.
+     * @param Horde_Variables $vars     The form state to check this field for
+     * @param Horde_Form_Variable $var  The Form field object to check
+     *
      */
     function _getUpload(&$vars, &$var)
     {
@@ -1229,6 +1264,8 @@ class Horde_Form_Type_image extends Horde_Form_Type {
     /**
      * Returns the current image information.
      *
+     * @param Horde_Variables $vars     The form state to check this field for
+     * @param Horde_Form_Variable $var  The Form field object to check
      * @return array  The current image hash.
      */
     function getImage($vars, $var)
@@ -1308,7 +1345,7 @@ class Horde_Form_Type_boolean extends Horde_Form_Type {
 
     function getInfo(&$vars, &$var, &$info)
     {
-        $info = Horde_String::lower($vars->get($var->getVarName())) == 'on';
+        $info = is_bool($var->getValue($vars)) ? $var->getValue($vars) : Horde_String::lower($vars->get($var->getVarName())) == 'on';
     }
 
     /**
@@ -1325,7 +1362,7 @@ class Horde_Form_Type_link extends Horde_Form_Type {
 
     /**
      * List of hashes containing link parameters. Possible keys: 'url', 'text',
-     * 'target', 'onclick', 'title', 'accesskey'.
+     * 'target', 'onclick', 'title', 'accesskey', 'class'.
      *
      * @var array
      */
@@ -1366,7 +1403,12 @@ class Horde_Form_Type_link extends Horde_Form_Type {
                     'type' => 'text'),
                 'accesskey' => array(
                     'label' => Horde_Form_Translation::t("Link access key"),
-                    'type' => 'text')));
+                    'type' => 'text'),
+                'class' => array(
+                    'label' => Horde_Form_Translation::t("Link CSS class"),
+                    'type' => 'text')
+            )
+        );
     }
 
 }
@@ -1416,6 +1458,13 @@ class Horde_Form_Type_email extends Horde_Form_Type {
     var $_delimiters = ',';
 
     /**
+     * The size of the input field.
+     *
+     * @var integer
+     */
+    var $_size;
+
+    /**
      * @param boolean $allow_multi   Allow multiple addresses?
      * @param boolean $strip_domain  Protect address from spammers?
      * @param boolean $link_compose  Link the email address to the compose page
@@ -1423,16 +1472,18 @@ class Horde_Form_Type_email extends Horde_Form_Type {
      * @param string $link_name      The name to use when linking to the
      *                               compose page.
      * @param string $delimiters     Character to split multiple addresses with.
+     * @param integer $size          The size of the input field.
      */
     function init($allow_multi = false, $strip_domain = false,
                   $link_compose = false, $link_name = null,
-                  $delimiters = ',')
+                  $delimiters = ',', $size = null)
     {
         $this->_allow_multi = $allow_multi;
         $this->_strip_domain = $strip_domain;
         $this->_link_compose = $link_compose;
         $this->_link_name = $link_name;
         $this->_delimiters = $delimiters;
+        $this->_size = $size;
     }
 
     /**
@@ -1606,6 +1657,16 @@ class Horde_Form_Type_email extends Horde_Form_Type {
         return substr($result, 0, 1) == '2';
     }
 
+    function getSize()
+    {
+        return $this->_size;
+    }
+
+    function allowMulti()
+    {
+        return $this->_allow_multi;
+    }
+
     /**
      * Return info about field type.
      */
@@ -1629,6 +1690,9 @@ class Horde_Form_Type_email extends Horde_Form_Type {
                 'delimiters' => array(
                     'label' => Horde_Form_Translation::t("Character to split multiple addresses with"),
                     'type' => 'text'),
+                'size' => array(
+                    'label' => Horde_Form_Translation::t("Size"),
+                    'type'  => 'int'),
             ),
         );
     }
@@ -1873,7 +1937,7 @@ class Horde_Form_Type_email extends Horde_Form_Type {
 
 
         #
-        # restrictuions on domain-literals from RFC2821 section 4.1.3
+        # restrictions on domain-literals from RFC2821 section 4.1.3
         #
 
         if (strlen($bits['domain-literal'])){
@@ -2085,24 +2149,22 @@ class Horde_Form_Type_emailConfirm extends Horde_Form_Type {
         if ($value['original'] != $value['confirm']) {
             $message = Horde_Form_Translation::t("Email addresses must match.");
             return false;
-        } else {
-            try {
-                $parsed_email = Horde_Mime_Address::parseAddressList($value['original'], array('validate' => true));
-            } catch (Horde_Mime_Exception $e) {
-                $message = $e->getMessage();
-                return false;
-            }
-            if (count($parsed_email) > 1) {
-                $message = Horde_Form_Translation::t("Only one email address allowed.");
-                return false;
-            }
-            if (empty($parsed_email[0]->mailbox)) {
-                $message = Horde_Form_Translation::t("You did not enter a valid email address.");
-                return false;
-            }
         }
 
-        return true;
+        $addr_ob = $GLOBALS['injector']->getInstance('Horde_Mail_Rfc822')->parseAddressList($value['original']);
+
+        switch (count($addr_ob)) {
+        case 0:
+            $message = Horde_Form_Translation::t("You did not enter a valid email address.");
+            return false;
+
+        case 1:
+            return true;
+
+        default:
+            $message = Horde_Form_Translation::t("Only one email address allowed.");
+            return false;
+        }
     }
 
     /**

@@ -33,7 +33,7 @@ class IMP_Mime_Viewer_Plain extends Horde_Mime_Viewer_Plain
         $data = $this->_impRender(false);
         $item = reset($data);
         Horde::startBuffer();
-        Horde::includeStylesheetFiles();
+        $GLOBALS['page_output']->includeStylesheetFiles();
         $item['data'] = '<html><head>' . Horde::endBuffer() . '</head><body>' . $item['data'] . '</body></html>';
         $data[key($data)] = $item;
         return $data;
@@ -58,7 +58,7 @@ class IMP_Mime_Viewer_Plain extends Horde_Mime_Viewer_Plain
      */
     protected function _impRender($inline)
     {
-        global $conf, $prefs;
+        global $conf, $prefs, $registry;
 
         $mime_id = $this->_mimepart->getMimeId();
 
@@ -99,8 +99,17 @@ class IMP_Mime_Viewer_Plain extends Horde_Mime_Viewer_Plain
 
         $text = IMP::filterText($text);
 
-        /* Done processing if in mimp mode. */
-        if (IMP::getViewMode() == 'mimp') {
+        /* Done processing if in minimal mode. */
+        if ($registry->getView() == Horde_Registry::VIEW_MINIMAL) {
+            $filters = array(
+                'text2html' => array(
+                    'charset' => $charset,
+                    'parselevel' => Horde_Text_Filter_Text2html::NOHTML_NOBREAK
+                )
+            );
+
+            $text = $this->_textFilter($text, array_keys($filters), array_values($filters));
+
             return array(
                 $mime_id => array(
                     'data' => $text,
@@ -120,21 +129,27 @@ class IMP_Mime_Viewer_Plain extends Horde_Mime_Viewer_Plain
 
         // Highlight quoted parts of an email.
         if ($prefs->getValue('highlight_text')) {
-            $show = $prefs->getValue('show_quoteblocks');
-            $hideBlocks = $inline &&
-                (($show == 'hidden') ||
-                 (($show == 'thread') && (basename(Horde::selfUrl()) == 'thread.php')));
-            if (!$hideBlocks && in_array($show, array('list', 'listthread'))) {
-                $header = $this->getConfigParam('imp_contents')->getHeader();
-                $imp_ui = new IMP_Ui_Message();
-                $list_info = $imp_ui->getListInformation($header);
-                $hideBlocks = $list_info['exists'];
+            if ($registry->getView() == $registry::VIEW_SMARTMOBILE) {
+                $hideBlocks = $js_blocks = false;
+            } else {
+                $js_blocks = $inline;
+                $show = $prefs->getValue('show_quoteblocks');
+                $hideBlocks = $inline &&
+                    (($show == 'hidden') ||
+                     (($show == 'thread') && (basename(Horde::selfUrl()) == 'thread.php')));
+                if (!$hideBlocks &&
+                    in_array($show, array('list', 'listthread'))) {
+                    $header = $this->getConfigParam('imp_contents')->getHeader();
+                    $imp_ui = new IMP_Ui_Message();
+                    $list_info = $imp_ui->getListInformation($header);
+                    $hideBlocks = $list_info['exists'];
+                }
             }
 
-            if ($inline) {
+            if ($js_blocks) {
                 $filters['highlightquotes'] = array(
                     'hideBlocks' => $hideBlocks,
-                    'noJS' => (IMP::getViewMode() == 'dimp')
+                    'noJS' => ($registry->getView() == Horde_Registry::VIEW_DYNAMIC)
                 );
             } else {
                 $filters['Horde_Text_Filter_Highlightquotes'] = array(
@@ -248,7 +263,8 @@ class IMP_Mime_Viewer_Plain extends Horde_Mime_Viewer_Plain
 
             case Horde_Crypt_Pgp::ARMOR_MESSAGE:
                 $part = new Horde_Mime_Part();
-                $part->setType('multipart/signed');
+                $part->setType('multipart/encrypted');
+                $part->setMetadata(IMP_Mime_Viewer_Pgp::PGP_ARMOR, true);
                 // TODO: add micalg parameter
                 $part->setContentTypeParameter('protocol', 'application/pgp-encrypted');
 
@@ -290,8 +306,8 @@ class IMP_Mime_Viewer_Plain extends Horde_Mime_Viewer_Plain
                     // the entire armored text to verify correctly. Use a
                     // IMP-specific content-type parameter to clue the PGP
                     // driver into this fact.
-                    $part2->setMetadata('imp-pgp-signature', true);
-                    $part2->setMetadata('imp-pgp-charset', $charset);
+                    $part2->setMetadata(IMP_Mime_Viewer_Pgp::PGP_SIG, true);
+                    $part2->setMetadata(IMP_Mime_Viewer_Pgp::PGP_CHARSET, $charset);
 
                     $part->addPart($part1);
                     $part->addPart($part2);

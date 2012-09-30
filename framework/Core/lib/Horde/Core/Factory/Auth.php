@@ -107,8 +107,14 @@ class Horde_Core_Factory_Auth extends Horde_Core_Factory_Base
         $lc_driver = Horde_String::lower($driver);
         switch ($lc_driver) {
         case 'horde_core_auth_composite':
-            $params['admin_driver'] = $this->_create($params['admin_driver']['driver'], $params['admin_driver']['params']);
-            $params['auth_driver'] = $this->_create($params['auth_driver']['driver'], $params['auth_driver']['params']);
+            // Both of these params are required, but we need to skip if
+            // non-existent to return a useful error message later.
+            if (!empty($params['admin_driver'])) {
+                $params['admin_driver'] = $this->_create($params['admin_driver']['driver'], $params['admin_driver']['params']);
+            }
+            if (!empty($params['auth_driver'])) {
+                $params['auth_driver'] = $this->_create($params['auth_driver']['driver'], $params['auth_driver']['params']);
+            }
             break;
 
         case 'cyrsql':
@@ -121,7 +127,7 @@ class Horde_Core_Factory_Auth extends Horde_Core_Factory_Base
             );
 
             try {
-                $ob = Horde_Imap_Client::factory('Socket', $imap_config);
+                $ob = new Horde_Imap_Client_Socket($imap_config);
                 $ob->login();
                 $params['imap'] = $ob;
             } catch (Horde_Imap_Client_Exception $e) {
@@ -137,16 +143,10 @@ class Horde_Core_Factory_Auth extends Horde_Core_Factory_Base
                     ->getInstance('Horde_Core_Factory_Db')
                     ->create('horde', is_null($orig_params) ? 'auth' : $orig_params);
             }
-
-            $params['charset'] = 'UTF-8';
             break;
 
         case 'http_remote':
             $params['client'] = $this->_injector->getInstance('Horde_Core_Factory_HttpClient')->create();
-            break;
-
-        case 'imap':
-            $params['charset'] = 'UTF-8';
             break;
 
         case 'horde_core_auth_application':

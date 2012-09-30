@@ -21,13 +21,13 @@ class Nag_Form_CreateTaskList extends Horde_Form
         parent::__construct($vars, _("Create Task List"));
 
         $this->addVariable(_("Name"), 'name', 'text', true);
-        $this->addVariable(_("Color"), 'color', 'colorpicker', false);
-        $this->addVariable(_("Description"), 'description', 'longtext', false, false, null, array(4, 60));
+        $v->setDefault(Nag::randomColor());
         if ($GLOBALS['registry']->isAdmin()) {
             $this->addVariable(
                 _("System Task List"), 'system', 'boolean', false, false,
                 _("System task lists don't have an owner. Only administrators can change the task list settings and permissions."));
         }
+        $this->addVariable(_("Description"), 'description', 'longtext', false, false, null, array(4, 60));
 
         $this->setButtons(array(_("Create")));
     }
@@ -38,7 +38,7 @@ class Nag_Form_CreateTaskList extends Horde_Form
         foreach (array('name', 'color', 'description', 'system') as $key) {
             $info[$key] = $this->_vars->get($key);
         }
+
         return Nag::addTasklist($info);
     }
-
 }

@@ -228,23 +228,26 @@ abstract class Whups_Driver
 
         $versioninfo = $this->getVersionInfo($queue);
         $versions = array();
-        $old_versions = false;
+        $old_versions = array();
         foreach ($versioninfo as $vinfo) {
-            if (!$all && !$vinfo['active']) {
-                $old_versions = $vinfo['id'];
-                continue;
-            }
-            $versions[$vinfo['id']] = $vinfo['name'];
+            $name = $vinfo['name'];
             if (!empty($vinfo['description'])) {
-                $versions[$vinfo['id']] .= ': ' . $vinfo['description'];
+                $name .= ': ' . $vinfo['description'];
             }
             if ($all && !$vinfo['active']) {
-                $versions[$vinfo['id']] .= ' ' . _("(inactive)");
+                $name .= ' ' . _("(inactive)");
+            }
+            if ($vinfo['active']) {
+                $versions[$vinfo['id']] = $name;
+            } else {
+                $old_versions[$vinfo['id']] = $name;
             }
         }
 
-        if ($old_versions) {
-            $versions[$old_versions] = _("Older? Please update first!");
+        if ($old_versions && !$all) {
+            $versions[key($old_versions)] = _("Older? Please update first!");
+        } else {
+            $versions += $old_versions;
         }
 
         return $versions;
@@ -557,20 +560,18 @@ abstract class Whups_Driver
                 $opts['view']->comment = $formattedComment;
             }
 
-            try {
-                $addr_arr = Horde_Mime_Address::parseAddressList($to);
-                if (isset($addr_arr[0])) {
-                    $bare_address = strtolower($addr_arr[0]['mailbox'] . '@' . $addr_arr[0]['host']);
-                    if (!empty($seen_email_addresses[$bare_address])) {
-                        continue;
-                    }
-                    $seen_email_addresses[$bare_address] = true;
-
-                    if (empty($full_name) && isset($addr_arr[0]['personal'])) {
-                        $full_name = $addr_arr[0]['personal'];
-                    }
+            $addr_ob = new Horde_Mail_Rfc822_Address($to);
+            if ($addr_ob->valid) {
+                $bare_address = $addr_ob->bare_address;
+                if (!empty($seen_email_addresses[$bare_address])) {
+                    continue;
                 }
-            } catch (Horde_Mime_Exception $e) {}
+                $seen_email_addresses[$bare_address] = true;
+
+                if (empty($full_name) && !is_null($addr_ob->personal)) {
+                    $full_name = $addr_ob->personal;
+                }
+            }
 
             // use email address as fallback
             if (empty($full_name)) {
@@ -645,7 +646,7 @@ abstract class Whups_Driver
                               strftime('%Y-%m-%d %H:%M', $comment['timestamp']),
                               $change['value'])
                     . "\n\n"
-                    . Horde::url(Horde::downloadUrl($change['value'], $url_params), true)
+                    . Horde::url($GLOBALS['registry']->downloadUrl($change['value'], $url_params), true)
                     . "\n\n\n";
             }
         }

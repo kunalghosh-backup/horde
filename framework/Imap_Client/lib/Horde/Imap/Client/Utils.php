@@ -188,20 +188,6 @@ class Horde_Imap_Client_Utils
     }
 
     /**
-     * Given a string, will strip out any characters that are not allowed in
-     * the IMAP 'atom' definition (RFC 3501 [9]).
-     *
-     * @param string $str  An ASCII string.
-     *
-     * @return string  The string with the disallowed atom characters stripped
-     *                 out.
-     */
-    public function stripNonAtomChars($str)
-    {
-        return str_replace(array('(', ')', '{', ' ', '%', '*', '"', '\\', ']'), '', preg_replace('/[\x00-\x1f\x7f]/', '', $str));
-    }
-
-    /**
      * Return the "base subject" defined in RFC 5256 [2.1].
      *
      * @param string $str     The original subject string.
@@ -213,8 +199,8 @@ class Horde_Imap_Client_Utils
      */
     public function getBaseSubject($str, $options = array())
     {
-        // Rule 1a: MIME decode to UTF-8.
-        $str = Horde_Mime::decode($str, 'UTF-8');
+        // Rule 1a: MIME decode.
+        $str = Horde_Mime::decode($str);
 
         // Rule 1b: Remove superfluous whitespace.
         $str = preg_replace("/[\t\r\n ]+/", ' ', $str);
@@ -412,127 +398,6 @@ class Horde_Imap_Client_Utils
         return $url;
     }
 
-    /**
-     * Parses a client command array to create a server command string.
-     *
-     * @since 1.2.0
-     *
-     * @param string $out         The unprocessed command string.
-     * @param callback $callback  A callback function to use if literal data
-     *                            is found. Two arguments are passed: the
-     *                            command string (as built so far) and the
-     *                            literal data. The return value should be the
-     *                            new value for the current command string.
-     * @param array $query        An array with the following format:
-     * <ul>
-     *  <li>
-     *   Array
-     *   <ul>
-     *    <li>
-     *     Array with keys 't' and 'v'
-     *     <ul>
-     *      <li>t: IMAP data type (Horde_Imap_Client::DATA_* constants)</li>
-     *      <li>v: Data value</li>
-     *     </ul>
-     *    </li>
-     *    <li>
-     *     Array with only values
-     *     <ul>
-     *      <li>Treated as a parenthesized list</li>
-     *     </ul>
-     *    </li>
-     *   </ul>
-     *  </li>
-     *  <li>
-     *   Null
-     *   <ul>
-     *    <li>Ignored</li>
-     *   </ul>
-     * </li>
-     *  <li>
-     *   Resource
-     *   <ul>
-     *    <li>Treated as literal data</li>
-     *   </ul>
-     * </li>
-     *  <li>
-     *   String
-     *   <ul>
-     *    <li>Output as-is (raw)</li>
-     *   </ul>
-     *  </li>
-     * </ul>
-     *
-     * @return string  The command string.
-     */
-    public function parseCommandArray($query, $callback = null, $out = '')
-    {
-        foreach ($query as $val) {
-            if (is_null($val)) {
-                continue;
-            }
-
-            if (is_array($val)) {
-                if (isset($val['t'])) {
-                    if ($val['t'] == Horde_Imap_Client::DATA_NUMBER) {
-                        $out .= intval($val['v']);
-                    } elseif (($val['t'] != Horde_Imap_Client::DATA_ATOM) &&
-                              preg_match('/[\x80-\xff\n\r]/', $val['v'])) {
-                        if (is_callable($callback)) {
-                            $out = call_user_func_array($callback, array($out, $val['v']));
-                        }
-                    } else {
-                        switch ($val['t']) {
-                        case Horde_Imap_Client::DATA_ASTRING:
-                        case Horde_Imap_Client::DATA_MAILBOX:
-                            /* Only requires quoting if an atom-special is
-                             * present (besides resp-specials). */
-                            $out .= $this->escape($val['v'], preg_match('/[\x00-\x1f\x7f\(\)\{\s%\*"\\\\]/', $val['v']));
-                            break;
-
-
-                        case Horde_Imap_Client::DATA_ATOM:
-                            $out .= $val['v'];
-                            break;
-
-                        case Horde_Imap_Client::DATA_STRING:
-                            /* IMAP strings MUST be quoted. */
-                            $out .= $this->escape($val['v'], true);
-                            break;
-
-                        case Horde_Imap_Client::DATA_DATETIME:
-                            $out .= '"' . $val['v'] . '"';
-                            break;
-
-                        case Horde_Imap_Client::DATA_LISTMAILBOX:
-                            $out .= $this->escape($val['v'], preg_match('/[\x00-\x1f\x7f\(\)\{\s"\\\\]/', $val['v']));
-                            break;
-
-                        case Horde_Imap_Client::DATA_NSTRING:
-                            $out .= strlen($val['v'])
-                                ? $this->escape($val['v'], true)
-                                : 'NIL';
-                            break;
-                        }
-                    }
-                } else {
-                    $out = rtrim($this->parseCommandArray($val, $callback, $out . '(')) . ')';
-                }
-
-                $out .= ' ';
-            } elseif (is_resource($val)) {
-                /* Resource indicates literal data. */
-                if (is_callable($callback)) {
-                    $out = call_user_func_array($callback, array($out, $val)) . ' ';
-                }
-            } else {
-                $out .= $val . ' ';
-            }
-        }
-
-        return $out;
-    }
-
     /* Internal methods. */
 
     /**
@@ -548,49 +413,46 @@ class Horde_Imap_Client_Utils
     {
         $ret = false;
 
-        if (!$str) {
+        if (!strlen($str)) {
             return $ret;
         }
 
-        if ($str[0] == ' ') {
-            $str = substr($str, 1);
+        if ($len = strspn($str, " \t")) {
+            $str = substr($str, $len);
             $ret = true;
         }
 
         $i = 0;
 
         if (!$keepblob) {
-            while ($str[$i] == '[') {
+            while (isset($str[$i]) && ($str[$i] == '[')) {
                 if (($i = $this->_removeBlob($str, $i)) === false) {
                     return $ret;
                 }
             }
         }
 
-        $cmp_str = substr($str, $i);
-        if (stripos($cmp_str, 're') === 0) {
+        if (stripos($str, 're', $i) === 0) {
             $i += 2;
-        } elseif (stripos($cmp_str, 'fwd') === 0) {
+        } elseif (stripos($str, 'fwd', $i) === 0) {
             $i += 3;
-        } elseif (stripos($cmp_str, 'fw') === 0) {
+        } elseif (stripos($str, 'fw', $i) === 0) {
             $i += 2;
         } else {
             return $ret;
         }
 
-        if ($str[$i] == ' ') {
-            ++$i;
-        }
+        $i += strspn($str, " \t", $i);
 
         if (!$keepblob) {
-            while ($str[$i] == '[') {
+            while (isset($str[$i]) && ($str[$i] == '[')) {
                 if (($i = $this->_removeBlob($str, $i)) === false) {
                     return $ret;
                 }
             }
         }
 
-        if ($str[$i] != ':') {
+        if (!isset($str[$i]) || ($str[$i] != ':')) {
             return $ret;
         }
 

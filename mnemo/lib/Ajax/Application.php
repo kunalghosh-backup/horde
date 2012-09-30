@@ -12,4 +12,14 @@
  * @license  http://www.horde.org/licenses/apache ASL
  * @package  Mnemo
  */
-class Mnemo_Ajax_Application extends Horde_Core_Ajax_Application {}
+class Mnemo_Ajax_Application extends Horde_Core_Ajax_Application
+{
+    /**
+     */
+    protected function _init()
+    {
+        $this->addHandler('Horde_Core_Ajax_Application_Handler_Imple');
+        $this->addHandler('Horde_Core_Ajax_Application_Handler_Prefs');
+    }
+
+}

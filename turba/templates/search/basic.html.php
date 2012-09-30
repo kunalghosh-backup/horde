@@ -1,8 +1,3 @@
-<script type="text/javascript">
-TurbaSearch.criteria = <?php echo json_encode($this->allCriteria) ?>;
-TurbaSearch.shareSources = <?php echo json_encode($this->shareSources) ?>;
-</script>
-
 <?php if (count($this->addressBooks) > 1): ?>
 <strong><label for="source"><?php echo _("From") ?></label></strong>
 <select id="turbaSearchSource" name="source" onchange="TurbaSearch.updateCriteria();">
@@ -22,4 +17,4 @@ TurbaSearch.shareSources = <?php echo json_encode($this->shareSources) ?>;
 
 <strong><label for="val"><?php echo _("Matching") ?></label></strong>
 <input type="text" size="30" id="val" name="val" value="<?php echo $this->h($this->val) ?>" />
-<input class="button" type="submit" name="search" value="<?php echo _("Search") ?>" />
+<input class="horde-default" type="submit" name="search" value="<?php echo _("Search") ?>" />

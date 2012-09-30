@@ -12,10 +12,14 @@
  * @category Horde
  * @license  http://www.horde.org/licenses/lgpl21 LGPL 2.1
  * @package  Core
+ *
+ * @property integer $begin  The timestamp when this session began (0 if
+ *                           session is not active).
  */
 class Horde_Session
 {
     /* Class constants. */
+    const BEGIN = '_b';
     const DATA = '_d';
     const MODIFIED = '_m';
     const PRUNE = '_p';
@@ -25,6 +29,8 @@ class Horde_Session
 
     const NOT_SERIALIZED = 0;
     const IS_SERIALIZED = 1;
+
+    const TOKEN_ID = 'session_token';
 
     /**
      * Maximum size of the pruneable data store.
@@ -89,6 +95,18 @@ class Horde_Session
     }
 
     /**
+     */
+    public function __get($name)
+    {
+        switch ($name) {
+        case 'begin':
+            return $this->_active
+                ? $_SESSION[self::BEGIN]
+                : 0;
+        }
+    }
+
+    /**
      * Sets a custom session handler up, if there is one.
      *
      * @param boolean $start         Initiate the session?
@@ -122,7 +140,8 @@ class Horde_Session
             0,
             $conf['cookie']['path'],
             $conf['cookie']['domain'],
-            $conf['use_ssl'] == 1 ? 1 : 0
+            $conf['use_ssl'] == 1 ? 1 : 0,
+            true
         );
         session_cache_limiter(is_null($cache_limiter) ? $conf['session']['cache_limiter'] : $cache_limiter);
         session_name(urlencode($conf['session']['name']));
@@ -142,8 +161,6 @@ class Horde_Session
 
     /**
      * Starts the session.
-     *
-     * @since 1.4.0
      */
     public function start()
     {
@@ -165,8 +182,12 @@ class Horde_Session
      */
     private function _start()
     {
+        $curr_time = time();
+
         /* Create internal data arrays. */
         if (!isset($_SESSION[self::MODIFIED])) {
+            $_SESSION[self::BEGIN] = $curr_time;
+
             /* Last modification time of session.
              * This will cause the check below to always return true
              * (time() >= 0) and will set the initial value. */
@@ -181,7 +202,6 @@ class Horde_Session
          * new timestamp. Why half the maxlifetime?  It guarantees that if
          * we are accessing the server via a periodic mechanism (think
          * folder refreshing in IMP) that we will catch this refresh. */
-        $curr_time = time();
         if ($curr_time >= $_SESSION[self::MODIFIED]) {
             $_SESSION[self::MODIFIED] = intval($curr_time + (ini_get('session.gc_maxlifetime') / 2));
             $this->sessionHandler->changed = true;
@@ -234,8 +254,6 @@ class Horde_Session
 
     /**
      * Is the current session active (read/write)?
-     *
-     * @since 1.4.0
      *
      * @return boolean  True if the current session is active.
      */
@@ -413,6 +431,39 @@ class Horde_Session
         }
 
         return $ret;
+    }
+
+    /* Session tokens. */
+
+    /**
+     * Returns the session token.
+     *
+     * @return string  Session token.
+     */
+    public function getToken()
+    {
+        if ($token = $this->get('horde', self::TOKEN_ID)) {
+            return $token;
+        }
+
+        $token = strval(new Horde_Support_Randomid());
+        $this->set('horde', self::TOKEN_ID, $token);
+
+        return $token;
+    }
+
+    /**
+     * Checks the validity of the session token.
+     *
+     * @param string $token  Token to check.
+     *
+     * @throws Horde_Exception
+     */
+    public function checkToken($token)
+    {
+        if ($this->getToken() != $token) {
+            throw new Horde_Exception('Invalid token!');
+        }
     }
 
     /* Session object storage. */

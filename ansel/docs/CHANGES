@@ -1,7 +1,28 @@
-----------
-v2.0.1-git
-----------
+--------
+v3.0-git
+--------
 
+
+------
+v2.0.2
+------
+
+[mjr] Fix auto rotation of images based on orientation exif data (Bug #11441).
+[mjr] Honor locked default_download pref (Bug #11325).
+[mjr] Fix getting gallery data via the API (maxime@chavagne.net, Bug# 11229).
+[mjr] Fix carousel when viewing upload screen in an iFrame (Bug #10889).
+[mjr] Fix returning to gallery view after uploading images when viewing Ansel
+      in an iFrame (Bug #11209).
+[mjr] Fix moving a subgallery to a top level gallery (Bug #11134).
+[jan] Fix redirection after setting gallery password (thpo+horde@dotrc.de, Bug
+      #11195).
+
+
+------
+v2.0.1
+------
+
+[jan] Fix saving portal blocks.
 [mjr] Fix issue with carousel display on legacy uploader.
 [mjr] Fix issue where gallery still retained image count after it was empties
       of all images when using gallery cache.
@@ -18,6 +39,7 @@ v2.0
       mozilla.
 [mjr] Fix issue with deleting galleries in date mode with key images (Bug
       #10671).
+
 
 --------
 v2.0-RC2

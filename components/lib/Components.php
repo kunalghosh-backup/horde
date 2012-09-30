@@ -66,7 +66,7 @@ class Components
 
         try {
             $ran = false;
-            foreach ($modular->getModules() as $module) {
+            foreach (clone $modular->getModules() as $module) {
                 $ran |= $modular->getProvider()->getModule($module)->handle($config);
             }
         } catch (Components_Exception $e) {
@@ -101,7 +101,7 @@ This is a list of available actions (use "help ACTION" to get additional informa
 '
                 ),
                 'modules' => array(
-                    'directory' => dirname(__FILE__) . '/Components/Module',
+                    'directory' => __DIR__ . '/Components/Module',
                     'exclude' => 'Base'
                 ),
                 'provider' => array(

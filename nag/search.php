@@ -6,21 +6,30 @@
  * did not receive this file, see http://www.horde.org/licenses/gpl.
  */
 
-require_once dirname(__FILE__) . '/lib/Application.php';
+require_once __DIR__ . '/lib/Application.php';
 Horde_Registry::appInit('nag');
 
-Horde::addInlineScript(array(
+$page_output->addInlineScript(array(
     '$("search_pattern")'
-), 'dom');
+), true);
 
-if ($prefs->getValue('show_panel')) {
-    $bodyClass = 'rightPanel';
+$page_output->header(array(
+    'title' => _("Search")
+));
+
+// Editing existing SmartList?
+$vars = Horde_Variables::getDefaultVariables();
+
+if ($id = $vars->get('smart_id')) {
+    $list = $nag_shares->getShare($id);
+    $searchObj = unserialize($list->get('search'));
+    $vars->set('smartlist_name', $list->get('name'));
+    $searchObj->getVars($vars);
+    $form = new Nag_Form_Search($vars, sprintf(_("Editing SmartList \"%s\""), htmlspecialchars($list->get('name'))));
+} else {
+    $form = new Nag_Form_Search($vars, _("Search"));
 }
-$title = _("Search");
 
-require $registry->get('templates', 'horde') . '/common-header.inc';
-echo Nag::menu();
 Nag::status();
-require NAG_TEMPLATES . '/search/search.inc';
-require NAG_TEMPLATES . '/panel.inc';
-require $registry->get('templates', 'horde') . '/common-footer.inc';
+$form->renderActive();
+$page_output->footer();

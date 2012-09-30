@@ -37,7 +37,7 @@
  * NOTE: Because the prefs_init hook is called BEFORE the application is
  *       initialized, application data will not be available in this hook.
  *       If you want to alter preferences values based on application data,
- *       you should use the appinitialized hook instead.
+ *       you should use the appauthenticated hook instead.
  *
  * On change
  * ---------
@@ -58,7 +58,8 @@
  * authentication occurs.
  *
  * If there is no active session, $userId and $credentials will be the values
- * provided by the base Horde authentication driver.
+ * provided by the base Horde authentication driver. ($userId will often
+ * be empty in this situation.)
  * For all other apps, $userId and $credentials will be the values of the
  * currently logged on Horde user.
  *
@@ -109,8 +110,8 @@
  *   [throw Horde_Auth_Exception] - Fatal error.
  *   (string) - The converted username.
  *
- * appinitialized
- * --------------
+ * appauthenticated
+ * ----------------
  * This hook is called after an application is authenticated to and the
  * initial application initialization is complete.
  *
@@ -118,24 +119,14 @@
  * thrown from this hook will cause a fatal error.
  *
  *
- * Application Switching Hooks
- * ===========================
- * These hooks are called every time an application is switched to.
- * They may be called MULTIPLE times per page access.
- * Actions that only need to be done once per login should use the
- * appinitialized hook instead.
+ * Application Initialization Hook
+ * ===============================
  *
  * pushapp
  * -------
- * This hook is called before an application is switched to.
+ * This hook is called the first time an application is pushed onto the stack.
  * It is passed no parameters and expects no return value.
  * Any Exception thrown in this hook will cause a fatal error.
- *
- * pushapp_post
- * ------------
- * This hook is called after an application is successfully switched to.
- * It is passed no parameters and expects no return value.
- * Any Exception thrown in this hook is ignored.
  *
  *
  * AJAX Hooks
@@ -441,7 +432,7 @@ class Horde_Hooks
 //            return $userId . '@' . $vdomain;
 //        } else {
 //            return (substr($userId, -strlen($vdomain)) == $vdomain)
-//              ? substr($userId, 0, -strlen($vdomain))
+//              ? substr($userId, 0, -strlen($vdomain) - 1)
 //              : $userId;
 //        }
 //
@@ -476,10 +467,10 @@ class Horde_Hooks
 //    }
 
 
-//    // APPLICATION INITIALIZATION HOOK: See above for format.
-//    public function appinitialized()
+//    // APPLICATION AUTHENTICATED HOOK: See above for format.
+//    public function appauthenticated()
 //    {
-//        // Code to run when an application is first initialized
+//        // Code to run when an application is first authenticated
 //    }
 
 
@@ -629,26 +620,24 @@ class Horde_Hooks
 //        // configured in $conf and store the extra fields in turba_objects,
 //        // using the $userId as the key for the object and values from the
 //        // $extra array. You could create your own sql syntax or code to
-//        store this in whichever backend you require.
+//        // store this in whichever backend you require.
 //        // NOTE: You NEED Turba to be correctly installed before you can use
 //        // this example. It also assumes you are using an SQL backend.
-//        $db = $GLOBALS['injector']->getInstance('Horde_Db_Pear')->getDb();
+//        $db = $GLOBALS['injector']->getInstance('Horde_Db_Adapter');
 //
-//        $fields = $values = array();
+//        $fields = $values = $markers = array();
 //        foreach ($extra as $field => $value) {
 //            $fields[] = 'object_' . Horde_String::lower($field);
-//            $values[] = $db->quote(Horde_String::convertCharset($value, 'UTF-8', $GLOBALS['conf']['sql']['charset']));
+//            $markers[] = '?';
+//            $values[] = Horde_String::convertCharset($value, 'UTF-8', $db->getCharset());
 //        }
 //        $fields[] = 'object_id';
-//        $values[] = $db->quote($userId);
+//        $markers[] = '?';
+//        $values[] = $userId;
 //
 //        $query  = 'INSERT INTO turba_objects ( owner_id, ' . implode(', ', $fields) . ')';
-//        $query .= ' VALUES ( \'admin\', ' . implode(', ', $values) . ')';
-//        $result = $db->query($query);
-//
-//        if ($result instanceof PEAR_Error) {
-//            throw new Horde_Exception_Wrapped($result);
-//        }
+//        $query .= ' VALUES ( \'admin\', ' . implode(', ', $markers) . ')';
+//        $db->insert($query, $values);
 //    }
 
 

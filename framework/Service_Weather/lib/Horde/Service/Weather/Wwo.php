@@ -167,10 +167,12 @@ class Horde_Service_Weather_Wwo extends Horde_Service_Weather_Base
      */
     protected function _getCommonElements($location, $length = Horde_Service_Weather::FORECAST_5DAY)
     {
-        if (!empty($this->_current) && $location == $this->_lastLocation) {
+        if (!empty($this->_current) && $location == $this->_lastLocation
+            && $this->_lastLength == $length) {
             return;
         }
 
+        $this->_lastLength = $length;
         $this->_lastLocation = $location;
 
         $url = new Horde_Url(self::API_URL);
@@ -314,10 +316,12 @@ class Horde_Service_Weather_Wwo extends Horde_Service_Weather_Base
     }
 
     /**
+     * Make the remote API call.
      *
-     * @param Horde_Url $url
+     * @param Horde_Url $url  The endpoint.
      *
-     * @return SimplexmlElement
+     * @return mixed  The unserialized results form the remote API call.
+     * @throws Horde_Service_Weather_Exception
      */
     protected function _makeRequest(Horde_Url $url)
     {

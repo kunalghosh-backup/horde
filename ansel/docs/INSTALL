@@ -1,5 +1,5 @@
 ======================
- Installing Ansel 2.0
+ Installing Ansel 3.0
 ======================
 
 .. contents:: Contents
@@ -22,7 +22,7 @@ To function properly, Ansel **requires** the following:
    for web applications written in PHP.  You must install Horde before
    installing Ansel.
 
-   .. Important:: Ansel 2.0 requires version 4.0+ of the Horde Framework -
+   .. Important:: Ansel 3.0 requires version 5.0+ of the Horde Framework -
                   earlier versions of Horde will **not** work.
 
    .. Important:: Be sure to have completed all of the steps in the
@@ -62,21 +62,18 @@ To function properly, Ansel **requires** the following:
 
    b. _`OpenCV`
 
-      The php-facedetect module provides the ability to detect human faces in
+      The `php-facedetect module`_ provides the ability to detect human faces in
       images. If you would like to be able to have Ansel automatically detect
-      faces in your images, you will need to install both the opencv library as
-      well as the phpfacedetect extension. You will still be able to manually
+      faces in your images, you will need to install both the `OpenCV library`_
+      as well as the phpfacedetect extension. You will still be able to manually
       select faces from your images if you do not have this extension installed.
 
       .. _ `OpenCV library`: http://sourceforge.net/projects/opencvlibrary/
-      .. _ `PHP Module`: http://www.xarg.org/project/php-facedetect/
-
-      NOTE: The php-facedetect extension **requires** the use of opencv library
-            version 1.x. Version 2 will NOT work at this time.
+      .. _ `php-facedetect module`: http://www.xarg.org/project/php-facedetect/
 
    c. _`libpuzzle`
 
-      The libpuzzle module provides the ability to determine similarities
+      The `libpuzzle library`_ provides the ability to determine similarities
       between images based on the image content. If you would like Ansel to be
       able to provide recognition of similar images and similar faces, you will
       need to install this module.
@@ -141,9 +138,7 @@ your PHP configuration::
 Installing from Git
 ~~~~~~~~~~~~~~~~~~~
 
-See::
-
-   http://horde.org/source/git.php
+See http://www.horde.org/source/git.php
 
 
 Configuring Ansel

@@ -64,7 +64,12 @@ class Ansel
             $treeparams['selected'] = $gallery_id == $params->selected;
             $parent = $gallery->getParent();
             $parent = empty($parent) ? null : $parent->id;
-            $tree->addNode($gallery->id, $parent, $label, null, true, $treeparams);
+            $tree->addNode(array(
+                'id' => $gallery->id,
+                'parent' => $parent,
+                'label' => $label,
+                'params' => $treeparams
+            ));
         }
 
         return $tree->getTree();
@@ -361,7 +366,12 @@ class Ansel
                 return Horde::url((string)Ansel::getErrorImage($view), $full);
             }
             try {
-                $image->createView($view, $style);
+                $image->createView(
+                    $view,
+                    $style,
+                    (($GLOBALS['prefs']->getValue('watermark_auto') && $view == 'screen') ?
+                        $GLOBALS['prefs']->getValue('watermark_text', '') : '')
+                );
             } catch (Ansel_Exception $e) {
                 return Horde::url((string)Ansel::getErrorImage($view), $full);
             }
@@ -562,7 +572,7 @@ class Ansel
         // the path back to the top.  By constructing it backward we can treat
         // the last element (the current page) specially.
         $levels = 0;
-        $nav = '</span>';
+        $nav = '';
         $urlFlags = array(
             'havesearch' => $haveSearch,
             'force_grouping' => true);
@@ -813,12 +823,11 @@ class Ansel
             $domid = $options['container'];
         }
 
-        $imple = $GLOBALS['injector']
-            ->getInstance('Horde_Core_Factory_Imple')
-            ->create(array('ansel', 'Embed'), $options);
+        $url = $GLOBALS['registry']->getServiceLink('ajax', 'ansel')->add($options);
+        $url->url .= 'embed';
 
-        return '<script type="text/javascript" src="' . $imple->getUrl()
-            . '"></script><div id="' . $domid . '"></div>';
+        return '<script type="text/javascript" src="' . $url .
+               '"></script><div id="' . $domid . '"></div>';
     }
 
     /**
@@ -868,80 +877,17 @@ class Ansel
 
             // IF
             $code['conf']['maps'] = $GLOBALS['conf']['maps'];
-            $code['conf']['pixeluri'] = (string)Horde::getServiceLink('pixel', 'ansel');
+            $code['conf']['pixeluri'] = (string)$GLOBALS['registry']->getServiceLink('pixel', 'ansel');
             $code['conf']['markeruri'] = (string)Horde_Themes::img('photomarker.png');
             $code['conf']['shadowuri'] = (string)Horde_Themes::img('photomarker-shadow.png');
             $code['conf']['havetwitter'] = !empty($GLOBALS['conf']['twitter']['enabled']);
             $code['ajax'] = new stdClass();
             $code['widgets'] = new stdClass();
-            Horde::addInlineJsVars(array(
-                'var Ansel' => $code));
-        }
-    }
 
-   /**
-     * Initialize the map.
-     *
-     * @TODO: Horde 5 - move this to a method in either Core or a new Horde_Map
-     *        framework pacakge.
-     * @param array $params Parameters to pass the the map
-     *
-     * @return void
-     */
-    static public function initHordeMap($params = array())
-    {
-        if (empty($params['providers'])) {
-            $params['providers'] = $GLOBALS['conf']['maps']['providers'];
+            $GLOBALS['page_output']->addInlineJsVars(array(
+                'var Ansel' => $code
+            ));
         }
-        if (empty($params['geocoder'])) {
-            $params['geocoder'] = $GLOBALS['conf']['maps']['geocoder'];
-        }
-        // Language specific file needed?
-        $language = str_replace('_', '-', $GLOBALS['language']);
-        if (!file_exists($GLOBALS['registry']->get('jsfs', 'horde') . '/map/lang/' . $language . '.js')) {
-            $language = 'en-US';
-        }
-        $params['conf'] = array(
-            'language' => $language
-        );
-        $params['driver'] = 'Horde';
-        foreach ($params['providers'] as $layer) {
-            switch ($layer) {
-            case 'Google':
-                $params['conf']['apikeys']['google'] = $GLOBALS['conf']['api']['googlemaps'];
-                break;
-            case 'Yahoo':
-                $params['conf']['apikeys']['yahoo'] = $GLOBALS['conf']['api']['yahoomaps'];
-                break;
-            case 'Cloudmade':
-                $params['conf']['apikeys']['cloudmade'] = $GLOBALS['conf']['api']['cloudmade'];
-                break;
-            case 'Mytopo':
-                $params['conf']['apikeys']['mytopo'] = $GLOBALS['conf']['api']['mytopo'];
-                break;
-            case 'Bing':
-                $params['conf']['apikeys']['bing'] = $GLOBALS['conf']['api']['bing'];
-            }
-        }
-
-        if (!empty($params['geocoder'])) {
-            switch ($params['geocoder']) {
-            case 'Google':
-                $params['conf']['apikeys']['google'] = $GLOBALS['conf']['api']['googlemaps'];
-                break;
-            case 'Yahoo':
-                $params['conf']['apikeys']['yahoo'] = $GLOBALS['conf']['api']['yahoomaps'];
-                break;
-            case 'Cloudmade':
-                $params['conf']['apikeys']['cloudmade'] = $GLOBALS['conf']['api']['cloudmade'];
-                break;
-            }
-        }
-        $params['jsuri'] = $GLOBALS['registry']->get('jsuri', 'horde') . '/map/';
-        Horde::addScriptFile('map/map.js', 'horde');
-        Horde::addScriptFile('map.js');
-        $js = 'HordeMap.initialize(' . Horde_Serialize::serialize($params, HORDE_SERIALIZE::JSON) . ');';
-        Horde::addinlineScript($js);
     }
 
 }
